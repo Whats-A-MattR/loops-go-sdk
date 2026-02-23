@@ -1,5 +1,9 @@
 # loops-go-sdk
 
+[![CI](https://github.com/Whats-A-MattR/loops-go-sdk/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Whats-A-MattR/loops-go-sdk/actions/workflows/ci.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/Whats-A-MattR/loops-go-sdk)](https://goreportcard.com/report/github.com/Whats-A-MattR/loops-go-sdk)
+[![pkg.go.dev](https://pkg.go.dev/badge/github.com/Whats-A-MattR/loops-go-sdk)](https://pkg.go.dev/github.com/Whats-A-MattR/loops-go-sdk)
+
 Community-maintained Go SDK for the [Loops](https://loops.so) API. Server-side only; types and behaviour follow the [Loops OpenAPI spec](https://app.loops.so/openapi.json).
 
 ## Install
