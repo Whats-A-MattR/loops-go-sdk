@@ -1,0 +1,58 @@
+# Fetches the live Loops OpenAPI spec and fails if it differs from our committed spec.
+# On failure, opens a GitHub issue so maintainers are notified to update the SDK.
+name: OpenAPI spec check
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch live OpenAPI spec
+        run: |
+          curl -sSf -o live-openapi.json "https://app.loops.so/openapi.json"
+
+      - name: Normalize and compare specs
+        id: diff
+        run: |
+          jq -S . openapi.json > committed.json 2>/dev/null || (cp openapi.json committed.json)
+          jq -S . live-openapi.json > live.json 2>/dev/null || (cp live-openapi.json live.json)
+          if diff -q committed.json live.json >/dev/null 2>&1; then
+            echo "spec_unchanged=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "spec_unchanged=false" >> "$GITHUB_OUTPUT"
+            diff committed.json live.json || true
+          fi
+
+      - name: Create issue when spec has changed
+        if: steps.diff.outputs.spec_unchanged == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TITLE="Loops OpenAPI spec has changed – SDK may need updating"
+          BODY="The live spec at \`https://app.loops.so/openapi.json\` no longer matches the committed \`openapi.json\` in this repo.
+
+          **Action:** Update \`openapi.json\` (and the SDK code if the API changed), then re-run the **OpenAPI spec check** workflow to clear this.
+
+          This issue was opened automatically by the [openapi-spec-check](https://github.com/${{ github.repository }}/actions/workflows/openapi-spec-check.yml) workflow."
+          EXISTING=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "Loops OpenAPI spec has changed" --json number --jq '.[0].number' 2>/dev/null || echo "")
+          if [ -z "$EXISTING" ] || [ "$EXISTING" = "null" ]; then
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITLE" --body "$BODY"
+          else
+            echo "Open issue already exists: #$EXISTING"
+          fi
+
+      - name: Fail when spec has changed
+        if: steps.diff.outputs.spec_unchanged == 'false'
+        run: |
+          echo "::error::Loops OpenAPI spec has changed. Update openapi.json and the SDK, then re-run this workflow. An issue was opened for maintainers."
+          exit 1
