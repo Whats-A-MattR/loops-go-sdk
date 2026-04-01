@@ -86,6 +86,35 @@ type ContactDeleteResponse struct {
 	Message string `json:"message"`
 }
 
+// --- Contact suppression ---
+
+// ContactSuppressionRemovalQuota is the quota for suppression removals (OpenAPI: limit, remaining required).
+type ContactSuppressionRemovalQuota struct {
+	Limit     float64 `json:"limit"`
+	Remaining float64 `json:"remaining"`
+}
+
+// ContactSuppressionContact is the contact summary embedded in ContactSuppressionStatusResponse.
+type ContactSuppressionContact struct {
+	ID     string  `json:"id"`
+	Email  string  `json:"email"`
+	UserID *string `json:"userId"`
+}
+
+// ContactSuppressionStatusResponse is the 200 response for GET /contacts/suppression.
+type ContactSuppressionStatusResponse struct {
+	Contact       ContactSuppressionContact       `json:"contact"`
+	IsSuppressed  bool                            `json:"isSuppressed"`
+	RemovalQuota  ContactSuppressionRemovalQuota  `json:"removalQuota"`
+}
+
+// ContactSuppressionRemoveResponse is the 200 response for DELETE /contacts/suppression.
+type ContactSuppressionRemoveResponse struct {
+	Success      bool                           `json:"success"`
+	Message      string                         `json:"message"`
+	RemovalQuota ContactSuppressionRemovalQuota `json:"removalQuota"`
+}
+
 // --- Contact properties ---
 
 // ContactPropertyCreateRequest is the body for POST /contacts/properties (OpenAPI: name, type required).

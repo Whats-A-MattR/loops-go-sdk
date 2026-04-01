@@ -57,6 +57,42 @@ func (c *Client) FindContact(ctx context.Context, email, userId string) ([]Conta
 	return out, nil
 }
 
+// GetContactSuppression retrieves suppression status for a contact (GET /contacts/suppression). Include only one of email or userId per OpenAPI.
+func (c *Client) GetContactSuppression(ctx context.Context, email, userId string) (*ContactSuppressionStatusResponse, error) {
+	if (email != "" && userId != "") || (email == "" && userId == "") {
+		return nil, &APIError{StatusCode: 400, Message: "exactly one of email or userId is required"}
+	}
+	q := url.Values{}
+	if email != "" {
+		q.Set("email", email)
+	} else {
+		q.Set("userId", userId)
+	}
+	var out ContactSuppressionStatusResponse
+	if err := c.doWithQuery(ctx, http.MethodGet, "/contacts/suppression", q, nil, &out); err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// DeleteContactSuppression removes a contact from the suppression list (DELETE /contacts/suppression). Include only one of email or userId per OpenAPI.
+func (c *Client) DeleteContactSuppression(ctx context.Context, email, userId string) (*ContactSuppressionRemoveResponse, error) {
+	if (email != "" && userId != "") || (email == "" && userId == "") {
+		return nil, &APIError{StatusCode: 400, Message: "exactly one of email or userId is required"}
+	}
+	q := url.Values{}
+	if email != "" {
+		q.Set("email", email)
+	} else {
+		q.Set("userId", userId)
+	}
+	var out ContactSuppressionRemoveResponse
+	if err := c.doWithQuery(ctx, http.MethodDelete, "/contacts/suppression", q, nil, &out); err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
 // DeleteContact deletes a contact (POST /contacts/delete). Include only one of email or userId per OpenAPI.
 func (c *Client) DeleteContact(ctx context.Context, req *ContactDeleteRequest) (*ContactDeleteResponse, error) {
 	if req == nil {
