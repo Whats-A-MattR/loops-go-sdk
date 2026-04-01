@@ -102,6 +102,27 @@ if err != nil {
 }
 ```
 
+### Get contact suppression status
+
+```go
+status, err := client.GetContactSuppression(ctx, "user@example.com", "")
+if err != nil {
+	log.Fatal(err)
+}
+fmt.Println("Suppressed:", status.IsSuppressed)
+fmt.Printf("Removal quota: %v remaining of %v\n", status.RemovalQuota.Remaining, status.RemovalQuota.Limit)
+```
+
+### Remove a contact from the suppression list
+
+```go
+result, err := client.DeleteContactSuppression(ctx, "user@example.com", "")
+if err != nil {
+	log.Fatal(err)
+}
+fmt.Println(result.Message)
+```
+
 ### Handle API errors
 
 ```go
@@ -131,7 +152,7 @@ client := loops.NewClient(apiKey,
 | Area | Methods |
 |------|--------|
 | **API key** | `GetAPIKey` |
-| **Contacts** | `CreateContact`, `UpdateContact`, `FindContact`, `DeleteContact` |
+| **Contacts** | `CreateContact`, `UpdateContact`, `FindContact`, `DeleteContact`, `GetContactSuppression`, `DeleteContactSuppression` |
 | **Contact properties** | `CreateContactProperty`, `ListContactProperties` |
 | **Mailing lists** | `GetLists` |
 | **Events** | `SendEvent` |
