@@ -413,6 +413,486 @@ func TestClient_GetDedicatedSendingIPs_SpecCompliant(t *testing.T) {
 	}
 }
 
+func TestClient_ListCampaigns_SpecCompliant(t *testing.T) {
+	resp := ListCampaignsResponse{
+		Success: true,
+		Pagination: ListPagination{
+			TotalResults:    1,
+			ReturnedResults: 1,
+			PerPage:         20,
+			TotalPages:      1,
+		},
+		Data: []CampaignListItem{{
+			CampaignID:     "camp_1",
+			EmailMessageID: stringPtr("msg_1"),
+			Name:           "Launch",
+			Subject:        "Hello",
+			Status:         "Draft",
+			CreatedAt:      "2026-04-24T00:00:00Z",
+			UpdatedAt:      "2026-04-24T00:00:00Z",
+		}},
+	}
+	body, _ := json.Marshal(resp)
+	var captured *http.Request
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		captured = r
+		w.WriteHeader(200)
+		w.Write(body)
+	}))
+	t.Cleanup(server.Close)
+
+	client := NewClient("key", WithBaseURL(server.URL))
+	ctx := context.Background()
+	got, err := client.ListCampaigns(ctx, 25, "cursor_xyz")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !got.Success || len(got.Data) != 1 || got.Data[0].CampaignID != "camp_1" {
+		t.Errorf("got %+v", got)
+	}
+	if captured.Method != http.MethodGet || captured.URL.Path != "/campaigns" {
+		t.Errorf("method=%s path=%s", captured.Method, captured.URL.Path)
+	}
+	q := captured.URL.Query()
+	if q.Get("perPage") != "25" || q.Get("cursor") != "cursor_xyz" {
+		t.Errorf("query: %s", captured.URL.RawQuery)
+	}
+}
+
+func TestClient_CreateCampaign_SpecCompliant(t *testing.T) {
+	resp := CreateCampaignResponse{
+		Success:                       true,
+		CampaignID:                    "camp_1",
+		Name:                          "Launch",
+		Status:                        "Draft",
+		CreatedAt:                     "2026-04-24T00:00:00Z",
+		UpdatedAt:                     "2026-04-24T00:00:00Z",
+		EmailMessageID:                "msg_1",
+		EmailMessageContentRevisionID: stringPtr("rev_1"),
+	}
+	body, _ := json.Marshal(resp)
+	var captured *http.Request
+	var reqBodyBytes []byte
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		captured = r
+		reqBodyBytes, _ = io.ReadAll(r.Body)
+		w.WriteHeader(201)
+		w.Write(body)
+	}))
+	t.Cleanup(server.Close)
+
+	client := NewClient("key", WithBaseURL(server.URL))
+	ctx := context.Background()
+	got, err := client.CreateCampaign(ctx, &CreateCampaignRequest{Name: "Launch"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !got.Success || got.CampaignID != "camp_1" {
+		t.Errorf("got %+v", got)
+	}
+	if captured.Method != http.MethodPost || captured.URL.Path != "/campaigns" {
+		t.Errorf("method=%s path=%s", captured.Method, captured.URL.Path)
+	}
+	var reqBody CreateCampaignRequest
+	if err := json.Unmarshal(reqBodyBytes, &reqBody); err != nil {
+		t.Fatal(err)
+	}
+	if reqBody.Name != "Launch" {
+		t.Errorf("body: %+v", reqBody)
+	}
+}
+
+func TestClient_CreateCampaign_NameRequired(t *testing.T) {
+	client := NewClient("key")
+	ctx := context.Background()
+	_, err := client.CreateCampaign(ctx, nil)
+	if err == nil {
+		t.Fatal("expected error for nil request")
+	}
+	_, err = client.CreateCampaign(ctx, &CreateCampaignRequest{})
+	if err == nil {
+		t.Fatal("expected error for missing name")
+	}
+}
+
+func TestClient_GetCampaign_SpecCompliant(t *testing.T) {
+	resp := CampaignResponse{
+		Success:        true,
+		CampaignID:     "camp_1",
+		Name:           "Launch",
+		Status:         "Draft",
+		CreatedAt:      "2026-04-24T00:00:00Z",
+		UpdatedAt:      "2026-04-24T00:00:00Z",
+		EmailMessageID: stringPtr("msg_1"),
+	}
+	body, _ := json.Marshal(resp)
+	var captured *http.Request
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		captured = r
+		w.WriteHeader(200)
+		w.Write(body)
+	}))
+	t.Cleanup(server.Close)
+
+	client := NewClient("key", WithBaseURL(server.URL))
+	ctx := context.Background()
+	got, err := client.GetCampaign(ctx, "camp_1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !got.Success || got.CampaignID != "camp_1" {
+		t.Errorf("got %+v", got)
+	}
+	if captured.Method != http.MethodGet || captured.URL.Path != "/campaigns/camp_1" {
+		t.Errorf("method=%s path=%s", captured.Method, captured.URL.Path)
+	}
+}
+
+func TestClient_GetCampaign_IDRequired(t *testing.T) {
+	client := NewClient("key")
+	ctx := context.Background()
+	_, err := client.GetCampaign(ctx, "")
+	if err == nil {
+		t.Fatal("expected error for missing campaign ID")
+	}
+}
+
+func TestClient_UpdateCampaign_SpecCompliant(t *testing.T) {
+	resp := CampaignResponse{
+		Success:        true,
+		CampaignID:     "camp_1",
+		Name:           "Renamed",
+		Status:         "Draft",
+		CreatedAt:      "2026-04-24T00:00:00Z",
+		UpdatedAt:      "2026-04-25T00:00:00Z",
+		EmailMessageID: stringPtr("msg_1"),
+	}
+	body, _ := json.Marshal(resp)
+	var captured *http.Request
+	var reqBodyBytes []byte
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		captured = r
+		reqBodyBytes, _ = io.ReadAll(r.Body)
+		w.WriteHeader(200)
+		w.Write(body)
+	}))
+	t.Cleanup(server.Close)
+
+	client := NewClient("key", WithBaseURL(server.URL))
+	ctx := context.Background()
+	got, err := client.UpdateCampaign(ctx, "camp_1", &UpdateCampaignRequest{Name: "Renamed"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !got.Success || got.Name != "Renamed" {
+		t.Errorf("got %+v", got)
+	}
+	if captured.Method != http.MethodPost || captured.URL.Path != "/campaigns/camp_1" {
+		t.Errorf("method=%s path=%s", captured.Method, captured.URL.Path)
+	}
+	var reqBody UpdateCampaignRequest
+	if err := json.Unmarshal(reqBodyBytes, &reqBody); err != nil {
+		t.Fatal(err)
+	}
+	if reqBody.Name != "Renamed" {
+		t.Errorf("body: %+v", reqBody)
+	}
+}
+
+func TestClient_UpdateCampaign_RequiresIDAndName(t *testing.T) {
+	client := NewClient("key")
+	ctx := context.Background()
+	_, err := client.UpdateCampaign(ctx, "", &UpdateCampaignRequest{Name: "Renamed"})
+	if err == nil {
+		t.Fatal("expected error for missing campaign ID")
+	}
+	_, err = client.UpdateCampaign(ctx, "camp_1", nil)
+	if err == nil {
+		t.Fatal("expected error for nil request")
+	}
+	_, err = client.UpdateCampaign(ctx, "camp_1", &UpdateCampaignRequest{})
+	if err == nil {
+		t.Fatal("expected error for missing name")
+	}
+}
+
+func TestClient_GetEmailMessage_SpecCompliant(t *testing.T) {
+	resp := EmailMessageResponse{
+		Success:           true,
+		EmailMessageID:    "msg_1",
+		CampaignID:        stringPtr("camp_1"),
+		Subject:           "Hello",
+		PreviewText:       "Preview",
+		FromName:          "Loops",
+		FromEmail:         "team",
+		ReplyToEmail:      "reply@example.com",
+		LMX:               "<Text>Hello</Text>",
+		ContentRevisionID: stringPtr("rev_1"),
+		UpdatedAt:         "2026-04-25T00:00:00Z",
+	}
+	body, _ := json.Marshal(resp)
+	var captured *http.Request
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		captured = r
+		w.WriteHeader(200)
+		w.Write(body)
+	}))
+	t.Cleanup(server.Close)
+
+	client := NewClient("key", WithBaseURL(server.URL))
+	ctx := context.Background()
+	got, err := client.GetEmailMessage(ctx, "msg_1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !got.Success || got.EmailMessageID != "msg_1" {
+		t.Errorf("got %+v", got)
+	}
+	if captured.Method != http.MethodGet || captured.URL.Path != "/email-messages/msg_1" {
+		t.Errorf("method=%s path=%s", captured.Method, captured.URL.Path)
+	}
+}
+
+func TestClient_GetEmailMessage_IDRequired(t *testing.T) {
+	client := NewClient("key")
+	ctx := context.Background()
+	_, err := client.GetEmailMessage(ctx, "")
+	if err == nil {
+		t.Fatal("expected error for missing email message ID")
+	}
+}
+
+func TestClient_UpdateEmailMessage_SpecCompliant(t *testing.T) {
+	resp := EmailMessageResponse{
+		Success:           true,
+		EmailMessageID:    "msg_1",
+		CampaignID:        stringPtr("camp_1"),
+		Subject:           "Updated",
+		PreviewText:       "Preview",
+		FromName:          "Loops",
+		FromEmail:         "team",
+		ReplyToEmail:      "reply@example.com",
+		LMX:               "<Text>Updated</Text>",
+		ContentRevisionID: stringPtr("rev_2"),
+		UpdatedAt:         "2026-04-25T00:00:00Z",
+	}
+	body, _ := json.Marshal(resp)
+	var captured *http.Request
+	var reqBodyBytes []byte
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		captured = r
+		reqBodyBytes, _ = io.ReadAll(r.Body)
+		w.WriteHeader(200)
+		w.Write(body)
+	}))
+	t.Cleanup(server.Close)
+
+	client := NewClient("key", WithBaseURL(server.URL))
+	ctx := context.Background()
+	got, err := client.UpdateEmailMessage(ctx, "msg_1", &UpdateEmailMessageRequest{
+		ExpectedRevisionID: "rev_1",
+		Subject:            "Updated",
+		LMX:                "<Text>Updated</Text>",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !got.Success || got.ContentRevisionID == nil || *got.ContentRevisionID != "rev_2" {
+		t.Errorf("got %+v", got)
+	}
+	if captured.Method != http.MethodPost || captured.URL.Path != "/email-messages/msg_1" {
+		t.Errorf("method=%s path=%s", captured.Method, captured.URL.Path)
+	}
+	var reqBody UpdateEmailMessageRequest
+	if err := json.Unmarshal(reqBodyBytes, &reqBody); err != nil {
+		t.Fatal(err)
+	}
+	if reqBody.ExpectedRevisionID != "rev_1" || reqBody.Subject != "Updated" || reqBody.LMX != "<Text>Updated</Text>" {
+		t.Errorf("body: %+v", reqBody)
+	}
+}
+
+func TestClient_UpdateEmailMessage_RequiresIDAndRequest(t *testing.T) {
+	client := NewClient("key")
+	ctx := context.Background()
+	_, err := client.UpdateEmailMessage(ctx, "", &UpdateEmailMessageRequest{})
+	if err == nil {
+		t.Fatal("expected error for missing email message ID")
+	}
+	_, err = client.UpdateEmailMessage(ctx, "msg_1", nil)
+	if err == nil {
+		t.Fatal("expected error for nil request")
+	}
+}
+
+func TestClient_ListThemes_SpecCompliant(t *testing.T) {
+	resp := ListThemesResponse{
+		Success: true,
+		Pagination: ListPagination{
+			TotalResults:    1,
+			ReturnedResults: 1,
+			PerPage:         20,
+			TotalPages:      1,
+		},
+		Data: []Theme{{
+			ThemeID:   "theme_1",
+			Name:      "Default",
+			Styles:    ThemeStyles{BackgroundColor: "white"},
+			IsDefault: true,
+			CreatedAt: "2026-04-24T00:00:00Z",
+			UpdatedAt: "2026-04-24T00:00:00Z",
+		}},
+	}
+	body, _ := json.Marshal(resp)
+	var captured *http.Request
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		captured = r
+		w.WriteHeader(200)
+		w.Write(body)
+	}))
+	t.Cleanup(server.Close)
+
+	client := NewClient("key", WithBaseURL(server.URL))
+	ctx := context.Background()
+	got, err := client.ListThemes(ctx, 25, "cursor_xyz")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !got.Success || len(got.Data) != 1 || got.Data[0].ThemeID != "theme_1" {
+		t.Errorf("got %+v", got)
+	}
+	if captured.Method != http.MethodGet || captured.URL.Path != "/themes" {
+		t.Errorf("method=%s path=%s", captured.Method, captured.URL.Path)
+	}
+	q := captured.URL.Query()
+	if q.Get("perPage") != "25" || q.Get("cursor") != "cursor_xyz" {
+		t.Errorf("query: %s", captured.URL.RawQuery)
+	}
+}
+
+func TestClient_GetTheme_SpecCompliant(t *testing.T) {
+	resp := ThemeResponse{
+		Success:   true,
+		ThemeID:   "theme_1",
+		Name:      "Default",
+		Styles:    ThemeStyles{BackgroundColor: "white"},
+		IsDefault: true,
+		CreatedAt: "2026-04-24T00:00:00Z",
+		UpdatedAt: "2026-04-24T00:00:00Z",
+	}
+	body, _ := json.Marshal(resp)
+	var captured *http.Request
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		captured = r
+		w.WriteHeader(200)
+		w.Write(body)
+	}))
+	t.Cleanup(server.Close)
+
+	client := NewClient("key", WithBaseURL(server.URL))
+	ctx := context.Background()
+	got, err := client.GetTheme(ctx, "theme_1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !got.Success || got.ThemeID != "theme_1" {
+		t.Errorf("got %+v", got)
+	}
+	if captured.Method != http.MethodGet || captured.URL.Path != "/themes/theme_1" {
+		t.Errorf("method=%s path=%s", captured.Method, captured.URL.Path)
+	}
+}
+
+func TestClient_GetTheme_IDRequired(t *testing.T) {
+	client := NewClient("key")
+	ctx := context.Background()
+	_, err := client.GetTheme(ctx, "")
+	if err == nil {
+		t.Fatal("expected error for missing theme ID")
+	}
+}
+
+func TestClient_ListComponents_SpecCompliant(t *testing.T) {
+	resp := ListComponentsResponse{
+		Success: true,
+		Pagination: ListPagination{
+			TotalResults:    1,
+			ReturnedResults: 1,
+			PerPage:         20,
+			TotalPages:      1,
+		},
+		Data: []Component{{
+			ComponentID: "component_1",
+			Name:        "Header",
+			LMX:         "<Text>Header</Text>",
+		}},
+	}
+	body, _ := json.Marshal(resp)
+	var captured *http.Request
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		captured = r
+		w.WriteHeader(200)
+		w.Write(body)
+	}))
+	t.Cleanup(server.Close)
+
+	client := NewClient("key", WithBaseURL(server.URL))
+	ctx := context.Background()
+	got, err := client.ListComponents(ctx, 25, "cursor_xyz")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !got.Success || len(got.Data) != 1 || got.Data[0].ComponentID != "component_1" {
+		t.Errorf("got %+v", got)
+	}
+	if captured.Method != http.MethodGet || captured.URL.Path != "/components" {
+		t.Errorf("method=%s path=%s", captured.Method, captured.URL.Path)
+	}
+	q := captured.URL.Query()
+	if q.Get("perPage") != "25" || q.Get("cursor") != "cursor_xyz" {
+		t.Errorf("query: %s", captured.URL.RawQuery)
+	}
+}
+
+func TestClient_GetComponent_SpecCompliant(t *testing.T) {
+	resp := ComponentResponse{
+		Success:     true,
+		ComponentID: "component_1",
+		Name:        "Header",
+		LMX:         "<Text>Header</Text>",
+	}
+	body, _ := json.Marshal(resp)
+	var captured *http.Request
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		captured = r
+		w.WriteHeader(200)
+		w.Write(body)
+	}))
+	t.Cleanup(server.Close)
+
+	client := NewClient("key", WithBaseURL(server.URL))
+	ctx := context.Background()
+	got, err := client.GetComponent(ctx, "component_1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !got.Success || got.ComponentID != "component_1" {
+		t.Errorf("got %+v", got)
+	}
+	if captured.Method != http.MethodGet || captured.URL.Path != "/components/component_1" {
+		t.Errorf("method=%s path=%s", captured.Method, captured.URL.Path)
+	}
+}
+
+func TestClient_GetComponent_IDRequired(t *testing.T) {
+	client := NewClient("key")
+	ctx := context.Background()
+	_, err := client.GetComponent(ctx, "")
+	if err == nil {
+		t.Fatal("expected error for missing component ID")
+	}
+}
+
 func TestClient_ContactProperties_SpecCompliant(t *testing.T) {
 	createBody, _ := json.Marshal(ContactPropertySuccessResponse{Success: true})
 	var createReq *http.Request
@@ -497,4 +977,8 @@ func TestNewClient_BaseURL(t *testing.T) {
 	if c2.baseURL != "https://example.com" {
 		t.Errorf("trailing slash should be trimmed: got %s", c2.baseURL)
 	}
+}
+
+func stringPtr(s string) *string {
+	return &s
 }

@@ -152,6 +152,10 @@ client := loops.NewClient(apiKey,
 | Area | Methods |
 |------|--------|
 | **API key** | `GetAPIKey` |
+| **Campaigns** | `ListCampaigns`, `CreateCampaign`, `GetCampaign`, `UpdateCampaign` |
+| **Email messages** | `GetEmailMessage`, `UpdateEmailMessage` |
+| **Themes** | `ListThemes`, `GetTheme` |
+| **Components** | `ListComponents`, `GetComponent` |
 | **Contacts** | `CreateContact`, `UpdateContact`, `FindContact`, `DeleteContact`, `GetContactSuppression`, `DeleteContactSuppression` |
 | **Contact properties** | `CreateContactProperty`, `ListContactProperties` |
 | **Mailing lists** | `GetLists` |
