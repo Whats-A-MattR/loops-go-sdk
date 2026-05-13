@@ -183,6 +183,14 @@ type UpdateEmailMessageRequest struct {
 	LMX                string `json:"lmx,omitempty"`
 }
 
+// EmailMessageWarning is a non-fatal warning returned when compiling LMX.
+type EmailMessageWarning struct {
+	Rule     string `json:"rule"`
+	Severity string `json:"severity"`
+	Message  string `json:"message"`
+	Path     string `json:"path,omitempty"`
+}
+
 // EmailMessageResponse is the 200 response for email message reads and updates.
 type EmailMessageResponse struct {
 	Success           bool    `json:"success"`
@@ -196,6 +204,7 @@ type EmailMessageResponse struct {
 	LMX               string  `json:"lmx"`
 	ContentRevisionID *string `json:"contentRevisionId"`
 	UpdatedAt         string  `json:"updatedAt"`
+	Warnings          []EmailMessageWarning `json:"warnings,omitempty"`
 }
 
 // EmailMessageFailureResponse is used for email message request failures.
