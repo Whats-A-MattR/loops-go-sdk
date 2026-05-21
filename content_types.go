@@ -193,17 +193,17 @@ type EmailMessageWarning struct {
 
 // EmailMessageResponse is the 200 response for email message reads and updates.
 type EmailMessageResponse struct {
-	Success           bool    `json:"success"`
-	EmailMessageID    string  `json:"emailMessageId"`
-	CampaignID        *string `json:"campaignId"`
-	Subject           string  `json:"subject"`
-	PreviewText       string  `json:"previewText"`
-	FromName          string  `json:"fromName"`
-	FromEmail         string  `json:"fromEmail"`
-	ReplyToEmail      string  `json:"replyToEmail"`
-	LMX               string  `json:"lmx"`
-	ContentRevisionID *string `json:"contentRevisionId"`
-	UpdatedAt         string  `json:"updatedAt"`
+	Success           bool                  `json:"success"`
+	EmailMessageID    string                `json:"emailMessageId"`
+	CampaignID        *string               `json:"campaignId"`
+	Subject           string                `json:"subject"`
+	PreviewText       string                `json:"previewText"`
+	FromName          string                `json:"fromName"`
+	FromEmail         string                `json:"fromEmail"`
+	ReplyToEmail      string                `json:"replyToEmail"`
+	LMX               string                `json:"lmx"`
+	ContentRevisionID *string               `json:"contentRevisionId"`
+	UpdatedAt         string                `json:"updatedAt"`
 	Warnings          []EmailMessageWarning `json:"warnings,omitempty"`
 }
 
@@ -211,4 +211,34 @@ type EmailMessageResponse struct {
 type EmailMessageFailureResponse struct {
 	Success bool   `json:"success"`
 	Message string `json:"message"`
+}
+
+// CreateUploadRequest is the body for POST /uploads.
+type CreateUploadRequest struct {
+	EmailMessageID string `json:"emailMessageId"`
+	ContentType    string `json:"contentType"`
+	ContentLength  int64  `json:"contentLength"`
+}
+
+// CreateUploadResponse is the 200 response for POST /uploads.
+type CreateUploadResponse struct {
+	Success      bool   `json:"success"`
+	EmailAssetID string `json:"emailAssetId"`
+	PresignedURL string `json:"presignedUrl"`
+	ExpiresAt    string `json:"expiresAt"`
+}
+
+// CompleteUploadResponse is the 200 response for POST /uploads/{id}/complete.
+type CompleteUploadResponse struct {
+	Success      bool   `json:"success"`
+	EmailAssetID string `json:"emailAssetId"`
+	FinalURL     string `json:"finalUrl"`
+}
+
+// UploadFailureResponse is used for upload request failures.
+type UploadFailureResponse struct {
+	Success               bool     `json:"success"`
+	Message               string   `json:"message"`
+	SupportedContentTypes []string `json:"supportedContentTypes,omitempty"`
+	MaxBytes              *int64   `json:"maxBytes,omitempty"`
 }

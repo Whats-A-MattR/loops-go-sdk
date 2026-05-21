@@ -725,6 +725,122 @@ func TestClient_UpdateEmailMessage_RequiresIDAndRequest(t *testing.T) {
 	}
 }
 
+func TestClient_CreateUpload_SpecCompliant(t *testing.T) {
+	resp := CreateUploadResponse{
+		Success:      true,
+		EmailAssetID: "asset_1",
+		PresignedURL: "https://uploads.example.com/signed",
+		ExpiresAt:    "2026-05-21T00:15:00Z",
+	}
+	body, _ := json.Marshal(resp)
+	var captured *http.Request
+	var reqBodyBytes []byte
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		captured = r
+		reqBodyBytes, _ = io.ReadAll(r.Body)
+		w.WriteHeader(200)
+		w.Write(body)
+	}))
+	t.Cleanup(server.Close)
+
+	client := NewClient("key", WithBaseURL(server.URL))
+	ctx := context.Background()
+	got, err := client.CreateUpload(ctx, &CreateUploadRequest{
+		EmailMessageID: "msg_1",
+		ContentType:    "image/png",
+		ContentLength:  1024,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !got.Success || got.EmailAssetID != "asset_1" {
+		t.Errorf("got %+v", got)
+	}
+	if captured.Method != http.MethodPost || captured.URL.Path != "/uploads" {
+		t.Errorf("method=%s path=%s", captured.Method, captured.URL.Path)
+	}
+	var reqBody CreateUploadRequest
+	if err := json.Unmarshal(reqBodyBytes, &reqBody); err != nil {
+		t.Fatal(err)
+	}
+	if reqBody.EmailMessageID != "msg_1" || reqBody.ContentType != "image/png" || reqBody.ContentLength != 1024 {
+		t.Errorf("body: %+v", reqBody)
+	}
+}
+
+func TestClient_CreateUpload_RequestValidation(t *testing.T) {
+	client := NewClient("key")
+	ctx := context.Background()
+	_, err := client.CreateUpload(ctx, nil)
+	if err == nil {
+		t.Fatal("expected error for nil request")
+	}
+	_, err = client.CreateUpload(ctx, &CreateUploadRequest{ContentType: "image/png", ContentLength: 10})
+	if err == nil {
+		t.Fatal("expected error for missing email message ID")
+	}
+	_, err = client.CreateUpload(ctx, &CreateUploadRequest{EmailMessageID: "msg_1", ContentLength: 10})
+	if err == nil {
+		t.Fatal("expected error for missing content type")
+	}
+	_, err = client.CreateUpload(ctx, &CreateUploadRequest{EmailMessageID: "msg_1", ContentType: "image/png", ContentLength: 0})
+	if err == nil {
+		t.Fatal("expected error for invalid content length")
+	}
+	_, err = client.CreateUpload(ctx, &CreateUploadRequest{EmailMessageID: "msg_1", ContentType: "image/png", ContentLength: 4_000_001})
+	if err == nil {
+		t.Fatal("expected error for content length exceeding max")
+	}
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		w.Write([]byte(`{"success":true,"emailAssetId":"a","presignedUrl":"https://x","expiresAt":"2026-01-01T00:00:00Z"}`))
+	}))
+	t.Cleanup(server.Close)
+	clientWithServer := NewClient("key", WithBaseURL(server.URL))
+	_, err = clientWithServer.CreateUpload(ctx, &CreateUploadRequest{EmailMessageID: "msg_1", ContentType: "image/png", ContentLength: 4_000_000})
+	if err != nil {
+		t.Fatalf("unexpected error for content length at max boundary: %v", err)
+	}
+}
+
+func TestClient_CompleteUpload_SpecCompliant(t *testing.T) {
+	resp := CompleteUploadResponse{
+		Success:      true,
+		EmailAssetID: "asset_1",
+		FinalURL:     "https://cdn.example.com/asset_1.png",
+	}
+	body, _ := json.Marshal(resp)
+	var captured *http.Request
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		captured = r
+		w.WriteHeader(200)
+		w.Write(body)
+	}))
+	t.Cleanup(server.Close)
+
+	client := NewClient("key", WithBaseURL(server.URL))
+	ctx := context.Background()
+	got, err := client.CompleteUpload(ctx, "asset_1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !got.Success || got.FinalURL != "https://cdn.example.com/asset_1.png" {
+		t.Errorf("got %+v", got)
+	}
+	if captured.Method != http.MethodPost || captured.URL.Path != "/uploads/asset_1/complete" {
+		t.Errorf("method=%s path=%s", captured.Method, captured.URL.Path)
+	}
+}
+
+func TestClient_CompleteUpload_IDRequired(t *testing.T) {
+	client := NewClient("key")
+	ctx := context.Background()
+	_, err := client.CompleteUpload(ctx, "")
+	if err == nil {
+		t.Fatal("expected error for missing upload ID")
+	}
+}
+
 func TestClient_ListThemes_SpecCompliant(t *testing.T) {
 	resp := ListThemesResponse{
 		Success: true,
