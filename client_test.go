@@ -787,6 +787,20 @@ func TestClient_CreateUpload_RequestValidation(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for invalid content length")
 	}
+	_, err = client.CreateUpload(ctx, &CreateUploadRequest{EmailMessageID: "msg_1", ContentType: "image/png", ContentLength: 4_000_001})
+	if err == nil {
+		t.Fatal("expected error for content length exceeding max")
+	}
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		w.Write([]byte(`{"success":true,"emailAssetId":"a","presignedUrl":"https://x","expiresAt":"2026-01-01T00:00:00Z"}`))
+	}))
+	t.Cleanup(server.Close)
+	clientWithServer := NewClient("key", WithBaseURL(server.URL))
+	_, err = clientWithServer.CreateUpload(ctx, &CreateUploadRequest{EmailMessageID: "msg_1", ContentType: "image/png", ContentLength: 4_000_000})
+	if err != nil {
+		t.Fatalf("unexpected error for content length at max boundary: %v", err)
+	}
 }
 
 func TestClient_CompleteUpload_SpecCompliant(t *testing.T) {

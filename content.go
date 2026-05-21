@@ -109,6 +109,9 @@ func (c *Client) CreateUpload(ctx context.Context, req *CreateUploadRequest) (*C
 	if req.ContentLength <= 0 {
 		return nil, &APIError{StatusCode: 400, Message: "contentLength must be greater than 0"}
 	}
+	if req.ContentLength > 4_000_000 {
+		return nil, &APIError{StatusCode: 400, Message: "contentLength must not exceed 4000000 bytes"}
+	}
 	body, err := json.Marshal(req)
 	if err != nil {
 		return nil, err

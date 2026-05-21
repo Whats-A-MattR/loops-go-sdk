@@ -78,6 +78,37 @@ func TestOpenAPI_SDKEndpointsExistInSpec(t *testing.T) {
 	}
 }
 
+func TestOpenAPI_UploadMaxContentLength(t *testing.T) {
+	dir := "."
+	b, err := os.ReadFile(filepath.Join(dir, "openapi.json"))
+	if err != nil {
+		t.Skipf("openapi.json not found: %v", err)
+	}
+	var spec struct {
+		Components struct {
+			Schemas map[string]struct {
+				Properties map[string]struct {
+					Description string `json:"description"`
+				} `json:"properties"`
+			} `json:"schemas"`
+		} `json:"components"`
+	}
+	if err := json.Unmarshal(b, &spec); err != nil {
+		t.Fatalf("parse openapi.json: %v", err)
+	}
+	schema, ok := spec.Components.Schemas["CreateUploadRequest"]
+	if !ok {
+		t.Fatal("CreateUploadRequest schema not found in spec")
+	}
+	prop, ok := schema.Properties["contentLength"]
+	if !ok {
+		t.Fatal("contentLength property not found in CreateUploadRequest")
+	}
+	if !strings.Contains(prop.Description, "4,000,000") {
+		t.Errorf("spec contentLength description changed — SDK max-bytes validation may need updating; description: %q", prop.Description)
+	}
+}
+
 func keys(m map[string]interface{}) []string {
 	var k []string
 	for s := range m {
