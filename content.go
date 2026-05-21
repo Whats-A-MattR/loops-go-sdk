@@ -94,3 +94,40 @@ func (c *Client) GetComponent(ctx context.Context, componentID string) (*Compone
 	}
 	return &out, nil
 }
+
+// CreateUpload requests a pre-signed URL for an upload (POST /uploads).
+func (c *Client) CreateUpload(ctx context.Context, req *CreateUploadRequest) (*CreateUploadResponse, error) {
+	if req == nil {
+		return nil, &APIError{StatusCode: 400, Message: "request is required"}
+	}
+	if req.EmailMessageID == "" {
+		return nil, &APIError{StatusCode: 400, Message: "emailMessageId is required"}
+	}
+	if req.ContentType == "" {
+		return nil, &APIError{StatusCode: 400, Message: "contentType is required"}
+	}
+	if req.ContentLength <= 0 {
+		return nil, &APIError{StatusCode: 400, Message: "contentLength must be greater than 0"}
+	}
+	body, err := json.Marshal(req)
+	if err != nil {
+		return nil, err
+	}
+	var out CreateUploadResponse
+	if err := c.do(ctx, http.MethodPost, "/uploads", body, &out, nil); err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// CompleteUpload finalizes an upload after file transfer (POST /uploads/{id}/complete).
+func (c *Client) CompleteUpload(ctx context.Context, id string) (*CompleteUploadResponse, error) {
+	if id == "" {
+		return nil, &APIError{StatusCode: 400, Message: "id is required"}
+	}
+	var out CompleteUploadResponse
+	if err := c.do(ctx, http.MethodPost, "/uploads/"+url.PathEscape(id)+"/complete", nil, &out, nil); err != nil {
+		return nil, err
+	}
+	return &out, nil
+}

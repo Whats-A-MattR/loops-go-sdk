@@ -161,6 +161,7 @@ client := loops.NewClient(apiKey,
 | **Mailing lists** | `GetLists` |
 | **Events** | `SendEvent` |
 | **Transactional** | `SendTransactional`, `ListTransactionals` |
+| **Uploads** | `CreateUpload`, `CompleteUpload` |
 | **Dedicated IPs** | `GetDedicatedSendingIPs` |
 
 All methods take a `context.Context` as the first argument. See [pkg.go.dev](https://pkg.go.dev/github.com/Whats-A-MattR/loops-go-sdk) for full API docs.

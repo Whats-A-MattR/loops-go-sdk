@@ -56,6 +56,8 @@ var expectedEndpoints = []struct {
 	{"POST", "/events/send"},
 	{"POST", "/transactional"},
 	{"GET", "/transactional"},
+	{"POST", "/uploads"},
+	{"POST", "/uploads/{id}/complete"},
 }
 
 func TestOpenAPI_SDKEndpointsExistInSpec(t *testing.T) {
