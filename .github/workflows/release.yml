@@ -1,0 +1,85 @@
+name: Release
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+jobs:
+  release:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get latest tag
+        id: latest_tag
+        run: |
+          tag=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
+          if [ -z "$tag" ]; then
+            tag="v0.0.0"
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "Latest tag: $tag"
+
+      - name: Determine version bump from commits
+        id: bump
+        run: |
+          latest_tag="${{ steps.latest_tag.outputs.tag }}"
+
+          if [ "$latest_tag" = "v0.0.0" ]; then
+            commits=$(git log --oneline --format="%s")
+          else
+            commits=$(git log --oneline --format="%s" "${latest_tag}..HEAD")
+          fi
+
+          bump="patch"
+          if echo "$commits" | grep -qiE '^feat(\(.+\))?!:|^[a-z]+(\(.+\))?!:|BREAKING CHANGE'; then
+            bump="major"
+          elif echo "$commits" | grep -qiE '^feat(\(.+\))?:'; then
+            bump="minor"
+          fi
+
+          echo "bump=$bump" >> "$GITHUB_OUTPUT"
+          echo "Bump type: $bump"
+
+      - name: Calculate next version
+        id: next_version
+        run: |
+          current="${{ steps.latest_tag.outputs.tag }}"
+          current="${current#v}"
+          IFS='.' read -r major minor patch <<< "$current"
+
+          bump="${{ steps.bump.outputs.bump }}"
+          case "$bump" in
+            major)
+              major=$((major + 1))
+              minor=0
+              patch=0
+              ;;
+            minor)
+              minor=$((minor + 1))
+              patch=0
+              ;;
+            patch)
+              patch=$((patch + 1))
+              ;;
+          esac
+
+          next="v${major}.${minor}.${patch}"
+          echo "version=$next" >> "$GITHUB_OUTPUT"
+          echo "Next version: $next"
+
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ steps.next_version.outputs.version }}" \
+            --target main \
+            --title "${{ steps.next_version.outputs.version }}" \
+            --draft \
+            --generate-notes
