@@ -215,9 +215,8 @@ type EmailMessageFailureResponse struct {
 
 // CreateUploadRequest is the body for POST /uploads.
 type CreateUploadRequest struct {
-	EmailMessageID string `json:"emailMessageId"`
-	ContentType    string `json:"contentType"`
-	ContentLength  int64  `json:"contentLength"`
+	ContentType   string `json:"contentType"`
+	ContentLength int64  `json:"contentLength"`
 }
 
 // CreateUploadResponse is the 200 response for POST /uploads.
@@ -225,7 +224,6 @@ type CreateUploadResponse struct {
 	Success      bool   `json:"success"`
 	EmailAssetID string `json:"emailAssetId"`
 	PresignedURL string `json:"presignedUrl"`
-	ExpiresAt    string `json:"expiresAt"`
 }
 
 // CompleteUploadResponse is the 200 response for POST /uploads/{id}/complete.

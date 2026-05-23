@@ -100,9 +100,6 @@ func (c *Client) CreateUpload(ctx context.Context, req *CreateUploadRequest) (*C
 	if req == nil {
 		return nil, &APIError{StatusCode: 400, Message: "request is required"}
 	}
-	if req.EmailMessageID == "" {
-		return nil, &APIError{StatusCode: 400, Message: "emailMessageId is required"}
-	}
 	if req.ContentType == "" {
 		return nil, &APIError{StatusCode: 400, Message: "contentType is required"}
 	}
