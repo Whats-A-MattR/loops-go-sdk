@@ -224,6 +224,9 @@ type CreateUploadResponse struct {
 	Success      bool   `json:"success"`
 	EmailAssetID string `json:"emailAssetId"`
 	PresignedURL string `json:"presignedUrl"`
+	// Deprecated: ExpiresAt is kept only for source compatibility with older callers.
+	// The API no longer returns this value.
+	ExpiresAt *string `json:"-"`
 }
 
 // CompleteUploadResponse is the 200 response for POST /uploads/{id}/complete.
