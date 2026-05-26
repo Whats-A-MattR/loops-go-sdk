@@ -36,7 +36,7 @@
     },
     {
       "name": "Uploads",
-      "description": "Upload image assets for email messages"
+      "description": "Upload image assets"
     },
     {
       "name": "Themes",
@@ -1491,7 +1491,7 @@
       "post": {
         "tags": ["Uploads"],
         "summary": "Create an upload",
-        "description": "Request a pre-signed URL to upload an image asset for an email message. Upload the file with an HTTP `PUT` to the returned `presignedUrl` (sending the same `Content-Type` and `Content-Length`), then call `/uploads/{id}/complete` to finalize the asset.",
+        "description": "Request a pre-signed URL to upload an image asset. Upload the file with an HTTP `PUT` to the returned `presignedUrl` (sending the same `Content-Type` and `Content-Length`), then call `/uploads/{id}/complete` to finalize the asset.",
         "requestBody": {
           "required": true,
           "content": {
@@ -1525,16 +1525,6 @@
           },
           "401": {
             "description": "Invalid API key or content API not enabled for this team."
-          },
-          "404": {
-            "description": "Email message not found.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UploadFailureResponse"
-                }
-              }
-            }
           },
           "405": {
             "description": "Wrong HTTP request method."
@@ -2835,10 +2825,6 @@
       "CreateUploadRequest": {
         "type": "object",
         "properties": {
-          "emailMessageId": {
-            "type": "string",
-            "description": "The ID of the email message the uploaded asset belongs to."
-          },
           "contentType": {
             "type": "string",
             "description": "The MIME type of the file to upload. Supported types are `image/jpeg`, `image/png`, `image/gif` and `image/webp`.",
@@ -2850,7 +2836,7 @@
             "examples": [102400]
           }
         },
-        "required": ["emailMessageId", "contentType", "contentLength"],
+        "required": ["contentType", "contentLength"],
         "additionalProperties": false
       },
       "CreateUploadResponse": {
@@ -2867,14 +2853,9 @@
           "presignedUrl": {
             "type": "string",
             "description": "The pre-signed URL to upload the file to with an HTTP `PUT` request. Send the same `Content-Type` and `Content-Length` used in the create request."
-          },
-          "expiresAt": {
-            "type": "string",
-            "format": "date-time",
-            "description": "When the pre-signed URL expires. The URL is valid for 15 minutes."
           }
         },
-        "required": ["success", "emailAssetId", "presignedUrl", "expiresAt"]
+        "required": ["success", "emailAssetId", "presignedUrl"]
       },
       "CompleteUploadResponse": {
         "type": "object",

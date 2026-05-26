@@ -730,7 +730,6 @@ func TestClient_CreateUpload_SpecCompliant(t *testing.T) {
 		Success:      true,
 		EmailAssetID: "asset_1",
 		PresignedURL: "https://uploads.example.com/signed",
-		ExpiresAt:    "2026-05-21T00:15:00Z",
 	}
 	body, _ := json.Marshal(resp)
 	var captured *http.Request
@@ -746,9 +745,8 @@ func TestClient_CreateUpload_SpecCompliant(t *testing.T) {
 	client := NewClient("key", WithBaseURL(server.URL))
 	ctx := context.Background()
 	got, err := client.CreateUpload(ctx, &CreateUploadRequest{
-		EmailMessageID: "msg_1",
-		ContentType:    "image/png",
-		ContentLength:  1024,
+		ContentType:   "image/png",
+		ContentLength: 1024,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -763,7 +761,7 @@ func TestClient_CreateUpload_SpecCompliant(t *testing.T) {
 	if err := json.Unmarshal(reqBodyBytes, &reqBody); err != nil {
 		t.Fatal(err)
 	}
-	if reqBody.EmailMessageID != "msg_1" || reqBody.ContentType != "image/png" || reqBody.ContentLength != 1024 {
+	if reqBody.ContentType != "image/png" || reqBody.ContentLength != 1024 {
 		t.Errorf("body: %+v", reqBody)
 	}
 }
@@ -775,29 +773,25 @@ func TestClient_CreateUpload_RequestValidation(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for nil request")
 	}
-	_, err = client.CreateUpload(ctx, &CreateUploadRequest{ContentType: "image/png", ContentLength: 10})
-	if err == nil {
-		t.Fatal("expected error for missing email message ID")
-	}
-	_, err = client.CreateUpload(ctx, &CreateUploadRequest{EmailMessageID: "msg_1", ContentLength: 10})
+	_, err = client.CreateUpload(ctx, &CreateUploadRequest{ContentLength: 10})
 	if err == nil {
 		t.Fatal("expected error for missing content type")
 	}
-	_, err = client.CreateUpload(ctx, &CreateUploadRequest{EmailMessageID: "msg_1", ContentType: "image/png", ContentLength: 0})
+	_, err = client.CreateUpload(ctx, &CreateUploadRequest{ContentType: "image/png", ContentLength: 0})
 	if err == nil {
 		t.Fatal("expected error for invalid content length")
 	}
-	_, err = client.CreateUpload(ctx, &CreateUploadRequest{EmailMessageID: "msg_1", ContentType: "image/png", ContentLength: 4_000_001})
+	_, err = client.CreateUpload(ctx, &CreateUploadRequest{ContentType: "image/png", ContentLength: 4_000_001})
 	if err == nil {
 		t.Fatal("expected error for content length exceeding max")
 	}
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
-		w.Write([]byte(`{"success":true,"emailAssetId":"a","presignedUrl":"https://x","expiresAt":"2026-01-01T00:00:00Z"}`))
+		w.Write([]byte(`{"success":true,"emailAssetId":"a","presignedUrl":"https://x"}`))
 	}))
 	t.Cleanup(server.Close)
 	clientWithServer := NewClient("key", WithBaseURL(server.URL))
-	_, err = clientWithServer.CreateUpload(ctx, &CreateUploadRequest{EmailMessageID: "msg_1", ContentType: "image/png", ContentLength: 4_000_000})
+	_, err = clientWithServer.CreateUpload(ctx, &CreateUploadRequest{ContentType: "image/png", ContentLength: 4_000_000})
 	if err != nil {
 		t.Fatalf("unexpected error for content length at max boundary: %v", err)
 	}
