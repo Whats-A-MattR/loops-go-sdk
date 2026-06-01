@@ -65,7 +65,8 @@ func (c *Client) ListTransactionalResources(ctx context.Context, perPage int, cu
 }
 
 // CreateTransactional creates a new transactional (POST /transactionals). name is required per OpenAPI.
-func (c *Client) CreateTransactional(ctx context.Context, req *CreateTransactionalRequest) (*TransactionalResourceResponse, error) {
+// CreateTransactional creates a new transactional (POST /transactionals). name is required per OpenAPI.
+func (c *Client) CreateTransactional(ctx context.Context, req *CreateTransactionalRequest) (*TransactionalDraftResponse, error) {
 	if req == nil || req.Name == "" {
 		return nil, &APIError{StatusCode: 400, Message: "name is required"}
 	}
@@ -73,7 +74,7 @@ func (c *Client) CreateTransactional(ctx context.Context, req *CreateTransaction
 	if err != nil {
 		return nil, err
 	}
-	var out TransactionalResourceResponse
+	var out TransactionalDraftResponse
 	if err := c.do(ctx, http.MethodPost, "/transactionals", body, &out, nil); err != nil {
 		return nil, err
 	}
