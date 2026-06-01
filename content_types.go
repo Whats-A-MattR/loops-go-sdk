@@ -243,3 +243,63 @@ type UploadFailureResponse struct {
 	SupportedContentTypes []string `json:"supportedContentTypes,omitempty"`
 	MaxBytes              *int64   `json:"maxBytes,omitempty"`
 }
+
+// UploadLimitExceededFailureResponse is the 429 response when the upload rate limit is exceeded.
+type UploadLimitExceededFailureResponse struct {
+	Success     bool   `json:"success"`
+	Message     string `json:"message"`
+	MaxUploads  int    `json:"maxUploads,omitempty"`
+	WindowHours int    `json:"windowHours,omitempty"`
+}
+
+// --- Transactional resource management (POST/GET /transactionals) ---
+
+// CreateTransactionalRequest is the body for POST /transactionals (name required).
+type CreateTransactionalRequest struct {
+	Name string `json:"name"`
+}
+
+// UpdateTransactionalRequest is the body for POST /transactionals/{transactionalId} (name required).
+type UpdateTransactionalRequest struct {
+	Name string `json:"name"`
+}
+
+// TransactionalEmailResource is a single item returned from GET /transactionals.
+type TransactionalEmailResource struct {
+	TransactionalID       string  `json:"transactionalId"`
+	Name                  string  `json:"name"`
+	DraftEmailMessageID   *string `json:"draftEmailMessageId"`
+	PublishedEmailMessageID *string `json:"publishedEmailMessageId"`
+	CreatedAt             string  `json:"createdAt"`
+	UpdatedAt             string  `json:"updatedAt"`
+}
+
+// ListTransactionalsResourceResponse is the 200 response for GET /transactionals.
+type ListTransactionalsResourceResponse struct {
+	Success    bool                         `json:"success"`
+	Pagination ListPagination               `json:"pagination"`
+	Data       []TransactionalEmailResource `json:"data"`
+}
+
+// TransactionalResourceResponse is the 200 response for GET/POST /transactionals/{transactionalId}.
+type TransactionalResourceResponse struct {
+	Success                 bool    `json:"success"`
+	TransactionalID         string  `json:"transactionalId"`
+	Name                    string  `json:"name"`
+	DraftEmailMessageID     *string `json:"draftEmailMessageId"`
+	PublishedEmailMessageID *string `json:"publishedEmailMessageId"`
+	CreatedAt               string  `json:"createdAt"`
+	UpdatedAt               string  `json:"updatedAt"`
+}
+
+// TransactionalDraftResponse is the 200 response for POST /transactionals/{transactionalId}/draft.
+type TransactionalDraftResponse struct {
+	Success                            bool    `json:"success"`
+	TransactionalID                    string  `json:"transactionalId"`
+	Name                               string  `json:"name"`
+	DraftEmailMessageID                *string `json:"draftEmailMessageId"`
+	DraftEmailMessageContentRevisionID *string `json:"draftEmailMessageContentRevisionId"`
+	PublishedEmailMessageID            *string `json:"publishedEmailMessageId"`
+	CreatedAt                          string  `json:"createdAt"`
+	UpdatedAt                          string  `json:"updatedAt"`
+}
