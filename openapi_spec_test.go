@@ -56,6 +56,12 @@ var expectedEndpoints = []struct {
 	{"POST", "/events/send"},
 	{"POST", "/transactional"},
 	{"GET", "/transactional"},
+	{"GET", "/transactionals"},
+	{"POST", "/transactionals"},
+	{"GET", "/transactionals/{transactionalId}"},
+	{"POST", "/transactionals/{transactionalId}"},
+	{"POST", "/transactionals/{transactionalId}/draft"},
+	{"POST", "/transactionals/{transactionalId}/publish"},
 	{"POST", "/uploads"},
 	{"POST", "/uploads/{id}/complete"},
 }
