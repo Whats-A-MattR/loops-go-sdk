@@ -18,7 +18,7 @@ func (c *Client) ListCampaigns(ctx context.Context, perPage int, cursor string) 
 		q.Set("cursor", cursor)
 	}
 	var out ListCampaignsResponse
-	if err := c.doWithQuery(ctx, http.MethodGet, "/campaigns", q, nil, &out); err != nil {
+	if err := c.doWithQuery(ctx, http.MethodGet, "/v1/campaigns", q, nil, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -34,7 +34,7 @@ func (c *Client) CreateCampaign(ctx context.Context, req *CreateCampaignRequest)
 		return nil, err
 	}
 	var out CreateCampaignResponse
-	if err := c.do(ctx, http.MethodPost, "/campaigns", body, &out, nil); err != nil {
+	if err := c.do(ctx, http.MethodPost, "/v1/campaigns", body, &out, nil); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -46,7 +46,7 @@ func (c *Client) GetCampaign(ctx context.Context, campaignID string) (*CampaignR
 		return nil, &APIError{StatusCode: 400, Message: "campaignId is required"}
 	}
 	var out CampaignResponse
-	if err := c.do(ctx, http.MethodGet, "/campaigns/"+url.PathEscape(campaignID), nil, &out, nil); err != nil {
+	if err := c.do(ctx, http.MethodGet, "/v1/campaigns/"+url.PathEscape(campaignID), nil, &out, nil); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -65,7 +65,7 @@ func (c *Client) UpdateCampaign(ctx context.Context, campaignID string, req *Upd
 		return nil, err
 	}
 	var out CampaignResponse
-	if err := c.do(ctx, http.MethodPost, "/campaigns/"+url.PathEscape(campaignID), body, &out, nil); err != nil {
+	if err := c.do(ctx, http.MethodPost, "/v1/campaigns/"+url.PathEscape(campaignID), body, &out, nil); err != nil {
 		return nil, err
 	}
 	return &out, nil

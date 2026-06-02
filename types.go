@@ -3,7 +3,7 @@
 package loops
 
 // DefaultBaseURL is the default Loops API base URL from the OpenAPI spec.
-const DefaultBaseURL = "https://app.loops.so/api/v1"
+const DefaultBaseURL = "https://app.loops.so/api"
 
 // --- API key (GET /api-key) ---
 
@@ -103,9 +103,9 @@ type ContactSuppressionContact struct {
 
 // ContactSuppressionStatusResponse is the 200 response for GET /contacts/suppression.
 type ContactSuppressionStatusResponse struct {
-	Contact       ContactSuppressionContact       `json:"contact"`
-	IsSuppressed  bool                            `json:"isSuppressed"`
-	RemovalQuota  ContactSuppressionRemovalQuota  `json:"removalQuota"`
+	Contact      ContactSuppressionContact      `json:"contact"`
+	IsSuppressed bool                           `json:"isSuppressed"`
+	RemovalQuota ContactSuppressionRemovalQuota `json:"removalQuota"`
 }
 
 // ContactSuppressionRemoveResponse is the 200 response for DELETE /contacts/suppression.
@@ -205,10 +205,10 @@ type TransactionalSuccessResponse struct {
 
 // TransactionalFailureResponse is used for 400/404 (OpenAPI variants have success, message; some add path, error, transactionalId).
 type TransactionalFailureResponse struct {
-	Success         bool   `json:"success"`
-	Message         string `json:"message"`
-	Path            string `json:"path,omitempty"`
-	Error           *struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
+	Path    string `json:"path,omitempty"`
+	Error   *struct {
 		Path    string `json:"path,omitempty"`
 		Message string `json:"message,omitempty"`
 		Reason  string `json:"reason,omitempty"`
@@ -218,10 +218,10 @@ type TransactionalFailureResponse struct {
 
 // TransactionalEmail (OpenAPI: id, name, lastUpdated, dataVariables required).
 type TransactionalEmail struct {
-	ID             string   `json:"id"`
-	Name           string   `json:"name"`
-	LastUpdated    string   `json:"lastUpdated"`
-	DataVariables  []string `json:"dataVariables"`
+	ID            string   `json:"id"`
+	Name          string   `json:"name"`
+	LastUpdated   string   `json:"lastUpdated"`
+	DataVariables []string `json:"dataVariables"`
 }
 
 // ListTransactionalsPagination (OpenAPI ListTransactionalsResponse.pagination).

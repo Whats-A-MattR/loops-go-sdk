@@ -17,7 +17,7 @@ func (c *Client) CreateContactProperty(ctx context.Context, req *ContactProperty
 		return nil, err
 	}
 	var out ContactPropertySuccessResponse
-	if err := c.do(ctx, http.MethodPost, "/contacts/properties", body, &out, nil); err != nil {
+	if err := c.do(ctx, http.MethodPost, "/v1/contacts/properties", body, &out, nil); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -30,7 +30,7 @@ func (c *Client) ListContactProperties(ctx context.Context, list string) ([]Cont
 		q.Set("list", list)
 	}
 	var out []ContactProperty
-	if err := c.doWithQuery(ctx, http.MethodGet, "/contacts/properties", q, nil, &out); err != nil {
+	if err := c.doWithQuery(ctx, http.MethodGet, "/v1/contacts/properties", q, nil, &out); err != nil {
 		return nil, err
 	}
 	return out, nil

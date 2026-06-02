@@ -17,7 +17,7 @@ func (c *Client) CreateContact(ctx context.Context, req *ContactRequest) (*Conta
 		return nil, err
 	}
 	var out ContactSuccessResponse
-	if err := c.do(ctx, http.MethodPost, "/contacts/create", body, &out, nil); err != nil {
+	if err := c.do(ctx, http.MethodPost, "/v1/contacts/create", body, &out, nil); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -33,7 +33,7 @@ func (c *Client) UpdateContact(ctx context.Context, req *ContactUpdateRequest) (
 		return nil, err
 	}
 	var out ContactSuccessResponse
-	if err := c.do(ctx, http.MethodPut, "/contacts/update", body, &out, nil); err != nil {
+	if err := c.do(ctx, http.MethodPut, "/v1/contacts/update", body, &out, nil); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -51,7 +51,7 @@ func (c *Client) FindContact(ctx context.Context, email, userId string) ([]Conta
 		q.Set("userId", userId)
 	}
 	var out []Contact
-	if err := c.doWithQuery(ctx, http.MethodGet, "/contacts/find", q, nil, &out); err != nil {
+	if err := c.doWithQuery(ctx, http.MethodGet, "/v1/contacts/find", q, nil, &out); err != nil {
 		return nil, err
 	}
 	return out, nil
@@ -69,7 +69,7 @@ func (c *Client) GetContactSuppression(ctx context.Context, email, userId string
 		q.Set("userId", userId)
 	}
 	var out ContactSuppressionStatusResponse
-	if err := c.doWithQuery(ctx, http.MethodGet, "/contacts/suppression", q, nil, &out); err != nil {
+	if err := c.doWithQuery(ctx, http.MethodGet, "/v1/contacts/suppression", q, nil, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -87,7 +87,7 @@ func (c *Client) DeleteContactSuppression(ctx context.Context, email, userId str
 		q.Set("userId", userId)
 	}
 	var out ContactSuppressionRemoveResponse
-	if err := c.doWithQuery(ctx, http.MethodDelete, "/contacts/suppression", q, nil, &out); err != nil {
+	if err := c.doWithQuery(ctx, http.MethodDelete, "/v1/contacts/suppression", q, nil, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -108,7 +108,7 @@ func (c *Client) DeleteContact(ctx context.Context, req *ContactDeleteRequest) (
 		return nil, err
 	}
 	var out ContactDeleteResponse
-	if err := c.do(ctx, http.MethodPost, "/contacts/delete", body, &out, nil); err != nil {
+	if err := c.do(ctx, http.MethodPost, "/v1/contacts/delete", body, &out, nil); err != nil {
 		return nil, err
 	}
 	return &out, nil

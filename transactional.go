@@ -26,7 +26,7 @@ func (c *Client) SendTransactional(ctx context.Context, req *TransactionalReques
 		headers[idempotencyKeyHeader] = idempotencyKey
 	}
 	var out TransactionalSuccessResponse
-	if err := c.doWithHeaders(ctx, http.MethodPost, "/transactional", headers, body, &out); err != nil {
+	if err := c.doWithHeaders(ctx, http.MethodPost, "/v1/transactional", headers, body, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -42,7 +42,7 @@ func (c *Client) ListTransactionals(ctx context.Context, perPage int, cursor str
 		q.Set("cursor", cursor)
 	}
 	var out ListTransactionalsResponse
-	if err := c.doWithQuery(ctx, http.MethodGet, "/transactional", q, nil, &out); err != nil {
+	if err := c.doWithQuery(ctx, http.MethodGet, "/v1/transactional", q, nil, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -58,7 +58,7 @@ func (c *Client) ListTransactionalResources(ctx context.Context, perPage int, cu
 		q.Set("cursor", cursor)
 	}
 	var out ListTransactionalsResourceResponse
-	if err := c.doWithQuery(ctx, http.MethodGet, "/transactionals", q, nil, &out); err != nil {
+	if err := c.doWithQuery(ctx, http.MethodGet, "/v2/transactional", q, nil, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -75,7 +75,7 @@ func (c *Client) CreateTransactional(ctx context.Context, req *CreateTransaction
 		return nil, err
 	}
 	var out TransactionalDraftResponse
-	if err := c.do(ctx, http.MethodPost, "/transactionals", body, &out, nil); err != nil {
+	if err := c.do(ctx, http.MethodPost, "/v2/transactional", body, &out, nil); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -87,7 +87,7 @@ func (c *Client) GetTransactional(ctx context.Context, transactionalID string) (
 		return nil, &APIError{StatusCode: 400, Message: "transactionalId is required"}
 	}
 	var out TransactionalResourceResponse
-	if err := c.do(ctx, http.MethodGet, "/transactionals/"+url.PathEscape(transactionalID), nil, &out, nil); err != nil {
+	if err := c.do(ctx, http.MethodGet, "/v2/transactional/"+url.PathEscape(transactionalID), nil, &out, nil); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -106,7 +106,7 @@ func (c *Client) UpdateTransactionalResource(ctx context.Context, transactionalI
 		return nil, err
 	}
 	var out TransactionalResourceResponse
-	if err := c.do(ctx, http.MethodPost, "/transactionals/"+url.PathEscape(transactionalID), body, &out, nil); err != nil {
+	if err := c.do(ctx, http.MethodPost, "/v2/transactional/"+url.PathEscape(transactionalID), body, &out, nil); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -118,7 +118,7 @@ func (c *Client) EnsureTransactionalDraft(ctx context.Context, transactionalID s
 		return nil, &APIError{StatusCode: 400, Message: "transactionalId is required"}
 	}
 	var out TransactionalDraftResponse
-	if err := c.do(ctx, http.MethodPost, "/transactionals/"+url.PathEscape(transactionalID)+"/draft", nil, &out, nil); err != nil {
+	if err := c.do(ctx, http.MethodPost, "/v2/transactional/"+url.PathEscape(transactionalID)+"/draft", nil, &out, nil); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -130,7 +130,7 @@ func (c *Client) PublishTransactional(ctx context.Context, transactionalID strin
 		return nil, &APIError{StatusCode: 400, Message: "transactionalId is required"}
 	}
 	var out TransactionalResourceResponse
-	if err := c.do(ctx, http.MethodPost, "/transactionals/"+url.PathEscape(transactionalID)+"/publish", nil, &out, nil); err != nil {
+	if err := c.do(ctx, http.MethodPost, "/v2/transactional/"+url.PathEscape(transactionalID)+"/publish", nil, &out, nil); err != nil {
 		return nil, err
 	}
 	return &out, nil

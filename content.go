@@ -14,7 +14,7 @@ func (c *Client) GetEmailMessage(ctx context.Context, emailMessageID string) (*E
 		return nil, &APIError{StatusCode: 400, Message: "emailMessageId is required"}
 	}
 	var out EmailMessageResponse
-	if err := c.do(ctx, http.MethodGet, "/email-messages/"+url.PathEscape(emailMessageID), nil, &out, nil); err != nil {
+	if err := c.do(ctx, http.MethodGet, "/v1/email-messages/"+url.PathEscape(emailMessageID), nil, &out, nil); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -33,7 +33,7 @@ func (c *Client) UpdateEmailMessage(ctx context.Context, emailMessageID string, 
 		return nil, err
 	}
 	var out EmailMessageResponse
-	if err := c.do(ctx, http.MethodPost, "/email-messages/"+url.PathEscape(emailMessageID), body, &out, nil); err != nil {
+	if err := c.do(ctx, http.MethodPost, "/v1/email-messages/"+url.PathEscape(emailMessageID), body, &out, nil); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -49,7 +49,7 @@ func (c *Client) ListThemes(ctx context.Context, perPage int, cursor string) (*L
 		q.Set("cursor", cursor)
 	}
 	var out ListThemesResponse
-	if err := c.doWithQuery(ctx, http.MethodGet, "/themes", q, nil, &out); err != nil {
+	if err := c.doWithQuery(ctx, http.MethodGet, "/v1/themes", q, nil, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -61,7 +61,7 @@ func (c *Client) GetTheme(ctx context.Context, themeID string) (*ThemeResponse, 
 		return nil, &APIError{StatusCode: 400, Message: "themeId is required"}
 	}
 	var out ThemeResponse
-	if err := c.do(ctx, http.MethodGet, "/themes/"+url.PathEscape(themeID), nil, &out, nil); err != nil {
+	if err := c.do(ctx, http.MethodGet, "/v1/themes/"+url.PathEscape(themeID), nil, &out, nil); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -77,7 +77,7 @@ func (c *Client) ListComponents(ctx context.Context, perPage int, cursor string)
 		q.Set("cursor", cursor)
 	}
 	var out ListComponentsResponse
-	if err := c.doWithQuery(ctx, http.MethodGet, "/components", q, nil, &out); err != nil {
+	if err := c.doWithQuery(ctx, http.MethodGet, "/v1/components", q, nil, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -89,7 +89,7 @@ func (c *Client) GetComponent(ctx context.Context, componentID string) (*Compone
 		return nil, &APIError{StatusCode: 400, Message: "componentId is required"}
 	}
 	var out ComponentResponse
-	if err := c.do(ctx, http.MethodGet, "/components/"+url.PathEscape(componentID), nil, &out, nil); err != nil {
+	if err := c.do(ctx, http.MethodGet, "/v1/components/"+url.PathEscape(componentID), nil, &out, nil); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -114,7 +114,7 @@ func (c *Client) CreateUpload(ctx context.Context, req *CreateUploadRequest) (*C
 		return nil, err
 	}
 	var out CreateUploadResponse
-	if err := c.do(ctx, http.MethodPost, "/uploads", body, &out, nil); err != nil {
+	if err := c.do(ctx, http.MethodPost, "/v1/uploads", body, &out, nil); err != nil {
 		return nil, err
 	}
 	return &out, nil
@@ -126,7 +126,7 @@ func (c *Client) CompleteUpload(ctx context.Context, id string) (*CompleteUpload
 		return nil, &APIError{StatusCode: 400, Message: "id is required"}
 	}
 	var out CompleteUploadResponse
-	if err := c.do(ctx, http.MethodPost, "/uploads/"+url.PathEscape(id)+"/complete", nil, &out, nil); err != nil {
+	if err := c.do(ctx, http.MethodPost, "/v1/uploads/"+url.PathEscape(id)+"/complete", nil, &out, nil); err != nil {
 		return nil, err
 	}
 	return &out, nil
