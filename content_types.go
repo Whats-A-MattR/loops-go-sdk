@@ -266,12 +266,13 @@ type UpdateTransactionalRequest struct {
 
 // TransactionalEmailResource is a single item returned from GET /transactionals.
 type TransactionalEmailResource struct {
-	TransactionalID       string  `json:"transactionalId"`
-	Name                  string  `json:"name"`
-	DraftEmailMessageID   *string `json:"draftEmailMessageId"`
-	PublishedEmailMessageID *string `json:"publishedEmailMessageId"`
-	CreatedAt             string  `json:"createdAt"`
-	UpdatedAt             string  `json:"updatedAt"`
+	TransactionalID         string   `json:"transactionalId"`
+	Name                    string   `json:"name"`
+	DataVariables           []string `json:"dataVariables"`
+	DraftEmailMessageID     *string  `json:"draftEmailMessageId"`
+	PublishedEmailMessageID *string  `json:"publishedEmailMessageId"`
+	CreatedAt               string   `json:"createdAt"`
+	UpdatedAt               string   `json:"updatedAt"`
 }
 
 // ListTransactionalsResourceResponse is the 200 response for GET /transactionals.
@@ -283,23 +284,25 @@ type ListTransactionalsResourceResponse struct {
 
 // TransactionalResourceResponse is the 200 response for GET/POST /transactionals/{transactionalId}.
 type TransactionalResourceResponse struct {
-	Success                 bool    `json:"success"`
-	TransactionalID         string  `json:"transactionalId"`
-	Name                    string  `json:"name"`
-	DraftEmailMessageID     *string `json:"draftEmailMessageId"`
-	PublishedEmailMessageID *string `json:"publishedEmailMessageId"`
-	CreatedAt               string  `json:"createdAt"`
-	UpdatedAt               string  `json:"updatedAt"`
+	Success                 bool     `json:"success"`
+	TransactionalID         string   `json:"transactionalId"`
+	Name                    string   `json:"name"`
+	DataVariables           []string `json:"dataVariables"`
+	DraftEmailMessageID     *string  `json:"draftEmailMessageId"`
+	PublishedEmailMessageID *string  `json:"publishedEmailMessageId"`
+	CreatedAt               string   `json:"createdAt"`
+	UpdatedAt               string   `json:"updatedAt"`
 }
 
 // TransactionalDraftResponse is the 200 response for POST /transactionals/{transactionalId}/draft.
 type TransactionalDraftResponse struct {
-	Success                            bool    `json:"success"`
-	TransactionalID                    string  `json:"transactionalId"`
-	Name                               string  `json:"name"`
-	DraftEmailMessageID                *string `json:"draftEmailMessageId"`
-	DraftEmailMessageContentRevisionID *string `json:"draftEmailMessageContentRevisionId"`
-	PublishedEmailMessageID            *string `json:"publishedEmailMessageId"`
-	CreatedAt                          string  `json:"createdAt"`
-	UpdatedAt                          string  `json:"updatedAt"`
+	Success                            bool     `json:"success"`
+	TransactionalID                    string   `json:"transactionalId"`
+	Name                               string   `json:"name"`
+	DataVariables                      []string `json:"dataVariables"`
+	DraftEmailMessageID                *string  `json:"draftEmailMessageId"`
+	DraftEmailMessageContentRevisionID *string  `json:"draftEmailMessageContentRevisionId"`
+	PublishedEmailMessageID            *string  `json:"publishedEmailMessageId"`
+	CreatedAt                          string   `json:"createdAt"`
+	UpdatedAt                          string   `json:"updatedAt"`
 }

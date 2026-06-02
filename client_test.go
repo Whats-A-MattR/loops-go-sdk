@@ -56,7 +56,7 @@ func TestClient_GetAPIKey_SpecCompliant(t *testing.T) {
 	if captured.Method != http.MethodGet {
 		t.Errorf("method: got %s, want GET (per OpenAPI)", captured.Method)
 	}
-	if captured.URL.Path != "/api-key" {
+	if captured.URL.Path != "/v1/api-key" {
 		t.Errorf("path: got %s, want /api-key (per OpenAPI)", captured.URL.Path)
 	}
 	if auth := captured.Header.Get("Authorization"); auth != "Bearer secret" {
@@ -89,7 +89,7 @@ func TestClient_CreateContact_SpecCompliant(t *testing.T) {
 	if captured.Method != http.MethodPost {
 		t.Errorf("method: got %s, want POST", captured.Method)
 	}
-	if captured.URL.Path != "/contacts/create" {
+	if captured.URL.Path != "/v1/contacts/create" {
 		t.Errorf("path: got %s, want /contacts/create", captured.URL.Path)
 	}
 	var reqBody struct {
@@ -139,7 +139,7 @@ func TestClient_UpdateContact_SpecCompliant(t *testing.T) {
 	if got.ID != "contact_123" {
 		t.Errorf("got %+v", got)
 	}
-	if captured.URL.Path != "/contacts/update" || captured.Method != http.MethodPut {
+	if captured.URL.Path != "/v1/contacts/update" || captured.Method != http.MethodPut {
 		t.Errorf("path=%s method=%s (OpenAPI: PUT /contacts/update)", captured.URL.Path, captured.Method)
 	}
 }
@@ -176,7 +176,7 @@ func TestClient_FindContact_SpecCompliant(t *testing.T) {
 	if len(got) != 1 || got[0].Email != "u@example.com" {
 		t.Errorf("got %+v", got)
 	}
-	if captured.URL.Path != "/contacts/find" {
+	if captured.URL.Path != "/v1/contacts/find" {
 		t.Errorf("path: %s", captured.URL.Path)
 	}
 	if captured.URL.Query().Get("email") != "u@example.com" || captured.URL.Query().Get("userId") != "" {
@@ -219,7 +219,7 @@ func TestClient_DeleteContact_SpecCompliant(t *testing.T) {
 	if !got.Success || got.Message != "Contact deleted." {
 		t.Errorf("got %+v", got)
 	}
-	if captured.Method != http.MethodPost || captured.URL.Path != "/contacts/delete" {
+	if captured.Method != http.MethodPost || captured.URL.Path != "/v1/contacts/delete" {
 		t.Errorf("method=%s path=%s", captured.Method, captured.URL.Path)
 	}
 	var reqBody ContactDeleteRequest
@@ -264,7 +264,7 @@ func TestClient_SendEvent_SpecCompliant(t *testing.T) {
 	if !got.Success {
 		t.Errorf("got %+v", got)
 	}
-	if captured.URL.Path != "/events/send" || captured.Method != http.MethodPost {
+	if captured.URL.Path != "/v1/events/send" || captured.Method != http.MethodPost {
 		t.Errorf("path=%s method=%s", captured.URL.Path, captured.Method)
 	}
 	if key := captured.Header.Get("Idempotency-Key"); key != "idem-123" {
@@ -318,7 +318,7 @@ func TestClient_SendTransactional_SpecCompliant(t *testing.T) {
 	if !got.Success {
 		t.Errorf("got %+v", got)
 	}
-	if captured.URL.Path != "/transactional" || captured.Method != http.MethodPost {
+	if captured.URL.Path != "/v1/transactional" || captured.Method != http.MethodPost {
 		t.Errorf("path=%s method=%s", captured.URL.Path, captured.Method)
 	}
 	if key := captured.Header.Get("Idempotency-Key"); key != "idem-456" {
@@ -354,12 +354,86 @@ func TestClient_ListTransactionals_SpecCompliant(t *testing.T) {
 	if got.Pagination.PerPage != 20 || len(got.Data) != 1 || got.Data[0].ID != "tx1" {
 		t.Errorf("got %+v", got)
 	}
-	if captured.Method != http.MethodGet || captured.URL.Path != "/transactional" {
+	if captured.Method != http.MethodGet || captured.URL.Path != "/v1/transactional" {
 		t.Errorf("method=%s path=%s", captured.Method, captured.URL.Path)
 	}
 	q := captured.URL.Query()
 	if q.Get("perPage") != "25" || q.Get("cursor") != "cursor_xyz" {
 		t.Errorf("query: %s", captured.URL.RawQuery)
+	}
+}
+
+func TestClient_ListTransactionalResources_SpecCompliant(t *testing.T) {
+	resp := ListTransactionalsResourceResponse{
+		Success: true,
+		Pagination: ListPagination{
+			TotalResults:    1,
+			ReturnedResults: 1,
+			PerPage:         20,
+			TotalPages:      1,
+		},
+		Data: []TransactionalEmailResource{{
+			TransactionalID: "tx_resource_1",
+			Name:            "Welcome Flow",
+			CreatedAt:       "2025-01-01",
+			UpdatedAt:       "2025-01-01",
+		}},
+	}
+	body, _ := json.Marshal(resp)
+	var captured *http.Request
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		captured = r
+		w.WriteHeader(200)
+		w.Write(body)
+	}))
+	t.Cleanup(server.Close)
+
+	client := NewClient("key", WithBaseURL(server.URL))
+	ctx := context.Background()
+	got, err := client.ListTransactionalResources(ctx, 30, "resource_cursor")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !got.Success || len(got.Data) != 1 || got.Data[0].TransactionalID != "tx_resource_1" {
+		t.Errorf("got %+v", got)
+	}
+	if captured.Method != http.MethodGet || captured.URL.Path != "/v2/transactional" {
+		t.Errorf("method=%s path=%s", captured.Method, captured.URL.Path)
+	}
+	q := captured.URL.Query()
+	if q.Get("perPage") != "30" || q.Get("cursor") != "resource_cursor" {
+		t.Errorf("query: %s", captured.URL.RawQuery)
+	}
+}
+
+func TestClient_GetTransactional_SpecCompliant(t *testing.T) {
+	resp := TransactionalResourceResponse{
+		Success:         true,
+		TransactionalID: "tx_resource_1",
+		Name:            "Welcome Flow",
+		CreatedAt:       "2025-01-01",
+		UpdatedAt:       "2025-01-01",
+	}
+	body, _ := json.Marshal(resp)
+	var captured *http.Request
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		captured = r
+		w.WriteHeader(200)
+		w.Write(body)
+	}))
+	t.Cleanup(server.Close)
+
+	client := NewClient("key", WithBaseURL(server.URL))
+	ctx := context.Background()
+	got, err := client.GetTransactional(ctx, "tx_resource_1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !got.Success || got.TransactionalID != "tx_resource_1" {
+		t.Errorf("got %+v", got)
+	}
+	if captured.Method != http.MethodGet || captured.URL.Path != "/v2/transactional/tx_resource_1" {
+		t.Errorf("method=%s path=%s", captured.Method, captured.URL.Path)
 	}
 }
 
@@ -383,7 +457,7 @@ func TestClient_GetLists_SpecCompliant(t *testing.T) {
 	if len(got) != 1 || got[0].ID != "list_1" {
 		t.Errorf("got %+v", got)
 	}
-	if captured.Method != http.MethodGet || captured.URL.Path != "/lists" {
+	if captured.Method != http.MethodGet || captured.URL.Path != "/v1/lists" {
 		t.Errorf("path=%s", captured.URL.Path)
 	}
 }
@@ -408,7 +482,7 @@ func TestClient_GetDedicatedSendingIPs_SpecCompliant(t *testing.T) {
 	if len(got) != 2 || got[0] != "1.2.3.4" {
 		t.Errorf("got %+v", got)
 	}
-	if captured.Method != http.MethodGet || captured.URL.Path != "/dedicated-sending-ips" {
+	if captured.Method != http.MethodGet || captured.URL.Path != "/v1/dedicated-sending-ips" {
 		t.Errorf("path=%s", captured.URL.Path)
 	}
 }
@@ -450,7 +524,7 @@ func TestClient_ListCampaigns_SpecCompliant(t *testing.T) {
 	if !got.Success || len(got.Data) != 1 || got.Data[0].CampaignID != "camp_1" {
 		t.Errorf("got %+v", got)
 	}
-	if captured.Method != http.MethodGet || captured.URL.Path != "/campaigns" {
+	if captured.Method != http.MethodGet || captured.URL.Path != "/v1/campaigns" {
 		t.Errorf("method=%s path=%s", captured.Method, captured.URL.Path)
 	}
 	q := captured.URL.Query()
@@ -490,7 +564,7 @@ func TestClient_CreateCampaign_SpecCompliant(t *testing.T) {
 	if !got.Success || got.CampaignID != "camp_1" {
 		t.Errorf("got %+v", got)
 	}
-	if captured.Method != http.MethodPost || captured.URL.Path != "/campaigns" {
+	if captured.Method != http.MethodPost || captured.URL.Path != "/v1/campaigns" {
 		t.Errorf("method=%s path=%s", captured.Method, captured.URL.Path)
 	}
 	var reqBody CreateCampaignRequest
@@ -543,7 +617,7 @@ func TestClient_GetCampaign_SpecCompliant(t *testing.T) {
 	if !got.Success || got.CampaignID != "camp_1" {
 		t.Errorf("got %+v", got)
 	}
-	if captured.Method != http.MethodGet || captured.URL.Path != "/campaigns/camp_1" {
+	if captured.Method != http.MethodGet || captured.URL.Path != "/v1/campaigns/camp_1" {
 		t.Errorf("method=%s path=%s", captured.Method, captured.URL.Path)
 	}
 }
@@ -587,7 +661,7 @@ func TestClient_UpdateCampaign_SpecCompliant(t *testing.T) {
 	if !got.Success || got.Name != "Renamed" {
 		t.Errorf("got %+v", got)
 	}
-	if captured.Method != http.MethodPost || captured.URL.Path != "/campaigns/camp_1" {
+	if captured.Method != http.MethodPost || captured.URL.Path != "/v1/campaigns/camp_1" {
 		t.Errorf("method=%s path=%s", captured.Method, captured.URL.Path)
 	}
 	var reqBody UpdateCampaignRequest
@@ -648,7 +722,7 @@ func TestClient_GetEmailMessage_SpecCompliant(t *testing.T) {
 	if !got.Success || got.EmailMessageID != "msg_1" {
 		t.Errorf("got %+v", got)
 	}
-	if captured.Method != http.MethodGet || captured.URL.Path != "/email-messages/msg_1" {
+	if captured.Method != http.MethodGet || captured.URL.Path != "/v1/email-messages/msg_1" {
 		t.Errorf("method=%s path=%s", captured.Method, captured.URL.Path)
 	}
 }
@@ -700,7 +774,7 @@ func TestClient_UpdateEmailMessage_SpecCompliant(t *testing.T) {
 	if !got.Success || got.ContentRevisionID == nil || *got.ContentRevisionID != "rev_2" {
 		t.Errorf("got %+v", got)
 	}
-	if captured.Method != http.MethodPost || captured.URL.Path != "/email-messages/msg_1" {
+	if captured.Method != http.MethodPost || captured.URL.Path != "/v1/email-messages/msg_1" {
 		t.Errorf("method=%s path=%s", captured.Method, captured.URL.Path)
 	}
 	var reqBody UpdateEmailMessageRequest
@@ -754,7 +828,7 @@ func TestClient_CreateUpload_SpecCompliant(t *testing.T) {
 	if !got.Success || got.EmailAssetID != "asset_1" {
 		t.Errorf("got %+v", got)
 	}
-	if captured.Method != http.MethodPost || captured.URL.Path != "/uploads" {
+	if captured.Method != http.MethodPost || captured.URL.Path != "/v1/uploads" {
 		t.Errorf("method=%s path=%s", captured.Method, captured.URL.Path)
 	}
 	var reqBody CreateUploadRequest
@@ -821,7 +895,7 @@ func TestClient_CompleteUpload_SpecCompliant(t *testing.T) {
 	if !got.Success || got.FinalURL != "https://cdn.example.com/asset_1.png" {
 		t.Errorf("got %+v", got)
 	}
-	if captured.Method != http.MethodPost || captured.URL.Path != "/uploads/asset_1/complete" {
+	if captured.Method != http.MethodPost || captured.URL.Path != "/v1/uploads/asset_1/complete" {
 		t.Errorf("method=%s path=%s", captured.Method, captured.URL.Path)
 	}
 }
@@ -871,7 +945,7 @@ func TestClient_ListThemes_SpecCompliant(t *testing.T) {
 	if !got.Success || len(got.Data) != 1 || got.Data[0].ThemeID != "theme_1" {
 		t.Errorf("got %+v", got)
 	}
-	if captured.Method != http.MethodGet || captured.URL.Path != "/themes" {
+	if captured.Method != http.MethodGet || captured.URL.Path != "/v1/themes" {
 		t.Errorf("method=%s path=%s", captured.Method, captured.URL.Path)
 	}
 	q := captured.URL.Query()
@@ -908,7 +982,7 @@ func TestClient_GetTheme_SpecCompliant(t *testing.T) {
 	if !got.Success || got.ThemeID != "theme_1" {
 		t.Errorf("got %+v", got)
 	}
-	if captured.Method != http.MethodGet || captured.URL.Path != "/themes/theme_1" {
+	if captured.Method != http.MethodGet || captured.URL.Path != "/v1/themes/theme_1" {
 		t.Errorf("method=%s path=%s", captured.Method, captured.URL.Path)
 	}
 }
@@ -955,7 +1029,7 @@ func TestClient_ListComponents_SpecCompliant(t *testing.T) {
 	if !got.Success || len(got.Data) != 1 || got.Data[0].ComponentID != "component_1" {
 		t.Errorf("got %+v", got)
 	}
-	if captured.Method != http.MethodGet || captured.URL.Path != "/components" {
+	if captured.Method != http.MethodGet || captured.URL.Path != "/v1/components" {
 		t.Errorf("method=%s path=%s", captured.Method, captured.URL.Path)
 	}
 	q := captured.URL.Query()
@@ -989,7 +1063,7 @@ func TestClient_GetComponent_SpecCompliant(t *testing.T) {
 	if !got.Success || got.ComponentID != "component_1" {
 		t.Errorf("got %+v", got)
 	}
-	if captured.Method != http.MethodGet || captured.URL.Path != "/components/component_1" {
+	if captured.Method != http.MethodGet || captured.URL.Path != "/v1/components/component_1" {
 		t.Errorf("method=%s path=%s", captured.Method, captured.URL.Path)
 	}
 }
@@ -1020,7 +1094,7 @@ func TestClient_ContactProperties_SpecCompliant(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if createReq.URL.Path != "/contacts/properties" || createReq.Method != http.MethodPost {
+	if createReq.URL.Path != "/v1/contacts/properties" || createReq.Method != http.MethodPost {
 		t.Errorf("create: path=%s method=%s", createReq.URL.Path, createReq.Method)
 	}
 	var createPayload ContactPropertyCreateRequest
@@ -1045,7 +1119,7 @@ func TestClient_ContactProperties_SpecCompliant(t *testing.T) {
 	if len(got) != 1 || got[0].Key != "planName" {
 		t.Errorf("list: %+v", got)
 	}
-	if listReq.URL.Path != "/contacts/properties" {
+	if listReq.URL.Path != "/v1/contacts/properties" {
 		t.Errorf("list path: %s", listReq.URL.Path)
 	}
 	if listReq.URL.Query().Get("list") != "custom" {

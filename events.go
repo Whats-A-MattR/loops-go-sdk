@@ -28,7 +28,7 @@ func (c *Client) SendEvent(ctx context.Context, req *EventRequest, idempotencyKe
 		headers[idempotencyKeyHeader] = idempotencyKey
 	}
 	var out EventSuccessResponse
-	if err := c.doWithHeaders(ctx, http.MethodPost, "/events/send", headers, body, &out); err != nil {
+	if err := c.doWithHeaders(ctx, http.MethodPost, "/v1/events/send", headers, body, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
