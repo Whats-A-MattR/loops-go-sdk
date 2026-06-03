@@ -55,7 +55,7 @@ type ThemeStyles struct {
 
 // Theme represents an email theme.
 type Theme struct {
-	ThemeID   string      `json:"themeId"`
+	ThemeID   string      `json:"id"`
 	Name      string      `json:"name"`
 	Styles    ThemeStyles `json:"styles"`
 	IsDefault bool        `json:"isDefault"`
@@ -73,7 +73,7 @@ type ListThemesResponse struct {
 // ThemeResponse is the 200 response for GET /themes/{themeId}.
 type ThemeResponse struct {
 	Success   bool        `json:"success"`
-	ThemeID   string      `json:"themeId"`
+	ThemeID   string      `json:"id"`
 	Name      string      `json:"name"`
 	Styles    ThemeStyles `json:"styles"`
 	IsDefault bool        `json:"isDefault"`
@@ -89,7 +89,7 @@ type ThemeFailureResponse struct {
 
 // Component represents an email component.
 type Component struct {
-	ComponentID string `json:"componentId"`
+	ComponentID string `json:"id"`
 	Name        string `json:"name"`
 	LMX         string `json:"lmx"`
 }
@@ -104,7 +104,7 @@ type ListComponentsResponse struct {
 // ComponentResponse is the 200 response for GET /components/{componentId}.
 type ComponentResponse struct {
 	Success     bool   `json:"success"`
-	ComponentID string `json:"componentId"`
+	ComponentID string `json:"id"`
 	Name        string `json:"name"`
 	LMX         string `json:"lmx"`
 }
@@ -117,7 +117,7 @@ type ComponentFailureResponse struct {
 
 // CampaignListItem is a single campaign returned from GET /campaigns.
 type CampaignListItem struct {
-	CampaignID     string  `json:"campaignId"`
+	CampaignID     string  `json:"id"`
 	EmailMessageID *string `json:"emailMessageId"`
 	Name           string  `json:"name"`
 	Subject        string  `json:"subject"`
@@ -141,7 +141,7 @@ type CreateCampaignRequest struct {
 // CreateCampaignResponse is the 201 response for POST /campaigns.
 type CreateCampaignResponse struct {
 	Success                       bool    `json:"success"`
-	CampaignID                    string  `json:"campaignId"`
+	CampaignID                    string  `json:"id"`
 	Name                          string  `json:"name"`
 	Status                        string  `json:"status"`
 	CreatedAt                     string  `json:"createdAt"`
@@ -158,7 +158,7 @@ type UpdateCampaignRequest struct {
 // CampaignResponse is the 200 response for campaign reads and updates.
 type CampaignResponse struct {
 	Success        bool    `json:"success"`
-	CampaignID     string  `json:"campaignId"`
+	CampaignID     string  `json:"id"`
 	Name           string  `json:"name"`
 	Status         string  `json:"status"`
 	CreatedAt      string  `json:"createdAt"`
@@ -194,7 +194,7 @@ type EmailMessageWarning struct {
 // EmailMessageResponse is the 200 response for email message reads and updates.
 type EmailMessageResponse struct {
 	Success           bool                  `json:"success"`
-	EmailMessageID    string                `json:"emailMessageId"`
+	EmailMessageID    string                `json:"id"`
 	CampaignID        *string               `json:"campaignId"`
 	Subject           string                `json:"subject"`
 	PreviewText       string                `json:"previewText"`
@@ -266,7 +266,7 @@ type UpdateTransactionalRequest struct {
 
 // TransactionalEmailResource is a single item returned from GET /transactionals.
 type TransactionalEmailResource struct {
-	TransactionalID         string   `json:"transactionalId"`
+	TransactionalID         string   `json:"id"`
 	Name                    string   `json:"name"`
 	DataVariables           []string `json:"dataVariables"`
 	DraftEmailMessageID     *string  `json:"draftEmailMessageId"`
@@ -285,7 +285,7 @@ type ListTransactionalsResourceResponse struct {
 // TransactionalResourceResponse is the 200 response for GET/POST /transactionals/{transactionalId}.
 type TransactionalResourceResponse struct {
 	Success                 bool     `json:"success"`
-	TransactionalID         string   `json:"transactionalId"`
+	TransactionalID         string   `json:"id"`
 	Name                    string   `json:"name"`
 	DataVariables           []string `json:"dataVariables"`
 	DraftEmailMessageID     *string  `json:"draftEmailMessageId"`
@@ -297,7 +297,7 @@ type TransactionalResourceResponse struct {
 // TransactionalDraftResponse is the 200 response for POST /transactionals/{transactionalId}/draft.
 type TransactionalDraftResponse struct {
 	Success                            bool     `json:"success"`
-	TransactionalID                    string   `json:"transactionalId"`
+	TransactionalID                    string   `json:"id"`
 	Name                               string   `json:"name"`
 	DataVariables                      []string `json:"dataVariables"`
 	DraftEmailMessageID                *string  `json:"draftEmailMessageId"`
