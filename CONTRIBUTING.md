@@ -8,7 +8,7 @@ Thanks for your interest in contributing. This is a community-maintained SDK for
 
 ## How to contribute
 
-- **Bug reports and feature requests:** Open a [GitHub issue](https://github.com/Whats-A-MattR/loops-go-sdk/issues).
+- **Bug reports and feature requests:** Open a [GitHub issue](https://github.com/loops-so/loops-go/issues).
 - **Code changes:** Open a pull request (PR) against `main`. Follow the guidelines below so your PR can be merged.
 
 ## Before you submit a PR
