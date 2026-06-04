@@ -1,12 +1,9 @@
-# loops-go-sdk
-
-> This project is no longer being maintained. Loops has created their own Go SDK, found here: [Loops GO SDK](https://github.com/loops-so/loops-go)
-
-Community-maintained Go SDK for the [Loops](https://loops.so) API. Server-side only; types and behaviour follow the [Loops OpenAPI spec](https://app.loops.so/openapi.json).
-
 > [!IMPORTANT]
 > This repository is being archived because Loops now maintains an official Go SDK: https://github.com/loops-so/loops-go
 > Please use the official SDK for new integrations and updates.
+
+
+Community-maintained Go SDK for the [Loops](https://loops.so) API. Server-side only; types and behaviour follow the [Loops OpenAPI spec](https://app.loops.so/openapi.json).
 
 ## Install
 
