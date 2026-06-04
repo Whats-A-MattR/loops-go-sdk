@@ -397,7 +397,7 @@ func TestClient_ListTransactionalResources_SpecCompliant(t *testing.T) {
 	if !got.Success || len(got.Data) != 1 || got.Data[0].TransactionalID != "tx_resource_1" {
 		t.Errorf("got %+v", got)
 	}
-	if captured.Method != http.MethodGet || captured.URL.Path != "/v2/transactional" {
+	if captured.Method != http.MethodGet || captured.URL.Path != "/v1/transactional-emails" {
 		t.Errorf("method=%s path=%s", captured.Method, captured.URL.Path)
 	}
 	q := captured.URL.Query()
@@ -432,7 +432,7 @@ func TestClient_GetTransactional_SpecCompliant(t *testing.T) {
 	if !got.Success || got.TransactionalID != "tx_resource_1" {
 		t.Errorf("got %+v", got)
 	}
-	if captured.Method != http.MethodGet || captured.URL.Path != "/v2/transactional/tx_resource_1" {
+	if captured.Method != http.MethodGet || captured.URL.Path != "/v1/transactional-emails/tx_resource_1" {
 		t.Errorf("method=%s path=%s", captured.Method, captured.URL.Path)
 	}
 }
