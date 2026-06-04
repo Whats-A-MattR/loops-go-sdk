@@ -48,7 +48,7 @@ func (c *Client) ListTransactionals(ctx context.Context, perPage int, cursor str
 	return &out, nil
 }
 
-// ListTransactionalResources returns a paginated list of transactional resources (GET /transactionals). perPage 10–50, default 20; cursor optional per OpenAPI.
+// ListTransactionalResources returns a paginated list of transactional email resources (GET /transactional-emails). perPage 10–50, default 20; cursor optional per OpenAPI.
 func (c *Client) ListTransactionalResources(ctx context.Context, perPage int, cursor string) (*ListTransactionalsResourceResponse, error) {
 	q := url.Values{}
 	if perPage > 0 {
@@ -58,14 +58,13 @@ func (c *Client) ListTransactionalResources(ctx context.Context, perPage int, cu
 		q.Set("cursor", cursor)
 	}
 	var out ListTransactionalsResourceResponse
-	if err := c.doWithQuery(ctx, http.MethodGet, "/v2/transactional", q, nil, &out); err != nil {
+	if err := c.doWithQuery(ctx, http.MethodGet, "/v1/transactional-emails", q, nil, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
 }
 
-// CreateTransactional creates a new transactional (POST /transactionals). name is required per OpenAPI.
-// CreateTransactional creates a new transactional (POST /transactionals). name is required per OpenAPI.
+// CreateTransactional creates a new transactional email (POST /transactional-emails). name is required per OpenAPI.
 func (c *Client) CreateTransactional(ctx context.Context, req *CreateTransactionalRequest) (*TransactionalDraftResponse, error) {
 	if req == nil || req.Name == "" {
 		return nil, &APIError{StatusCode: 400, Message: "name is required"}
@@ -75,25 +74,25 @@ func (c *Client) CreateTransactional(ctx context.Context, req *CreateTransaction
 		return nil, err
 	}
 	var out TransactionalDraftResponse
-	if err := c.do(ctx, http.MethodPost, "/v2/transactional", body, &out, nil); err != nil {
+	if err := c.do(ctx, http.MethodPost, "/v1/transactional-emails", body, &out, nil); err != nil {
 		return nil, err
 	}
 	return &out, nil
 }
 
-// GetTransactional retrieves a transactional by ID (GET /transactionals/{transactionalId}).
+// GetTransactional retrieves a transactional email by ID (GET /transactional-emails/{transactionalId}).
 func (c *Client) GetTransactional(ctx context.Context, transactionalID string) (*TransactionalResourceResponse, error) {
 	if transactionalID == "" {
 		return nil, &APIError{StatusCode: 400, Message: "transactionalId is required"}
 	}
 	var out TransactionalResourceResponse
-	if err := c.do(ctx, http.MethodGet, "/v2/transactional/"+url.PathEscape(transactionalID), nil, &out, nil); err != nil {
+	if err := c.do(ctx, http.MethodGet, "/v1/transactional-emails/"+url.PathEscape(transactionalID), nil, &out, nil); err != nil {
 		return nil, err
 	}
 	return &out, nil
 }
 
-// UpdateTransactionalResource updates a transactional's name (POST /transactionals/{transactionalId}).
+// UpdateTransactionalResource updates a transactional email's name (POST /transactional-emails/{transactionalId}).
 func (c *Client) UpdateTransactionalResource(ctx context.Context, transactionalID string, req *UpdateTransactionalRequest) (*TransactionalResourceResponse, error) {
 	if transactionalID == "" {
 		return nil, &APIError{StatusCode: 400, Message: "transactionalId is required"}
@@ -106,31 +105,31 @@ func (c *Client) UpdateTransactionalResource(ctx context.Context, transactionalI
 		return nil, err
 	}
 	var out TransactionalResourceResponse
-	if err := c.do(ctx, http.MethodPost, "/v2/transactional/"+url.PathEscape(transactionalID), body, &out, nil); err != nil {
+	if err := c.do(ctx, http.MethodPost, "/v1/transactional-emails/"+url.PathEscape(transactionalID), body, &out, nil); err != nil {
 		return nil, err
 	}
 	return &out, nil
 }
 
-// EnsureTransactionalDraft ensures a draft email message exists for the transactional (POST /transactionals/{transactionalId}/draft).
+// EnsureTransactionalDraft ensures a draft email message exists for the transactional email (POST /transactional-emails/{transactionalId}/draft).
 func (c *Client) EnsureTransactionalDraft(ctx context.Context, transactionalID string) (*TransactionalDraftResponse, error) {
 	if transactionalID == "" {
 		return nil, &APIError{StatusCode: 400, Message: "transactionalId is required"}
 	}
 	var out TransactionalDraftResponse
-	if err := c.do(ctx, http.MethodPost, "/v2/transactional/"+url.PathEscape(transactionalID)+"/draft", nil, &out, nil); err != nil {
+	if err := c.do(ctx, http.MethodPost, "/v1/transactional-emails/"+url.PathEscape(transactionalID)+"/draft", nil, &out, nil); err != nil {
 		return nil, err
 	}
 	return &out, nil
 }
 
-// PublishTransactional publishes a transactional's current draft (POST /transactionals/{transactionalId}/publish).
+// PublishTransactional publishes a transactional email's current draft (POST /transactional-emails/{transactionalId}/publish).
 func (c *Client) PublishTransactional(ctx context.Context, transactionalID string) (*TransactionalResourceResponse, error) {
 	if transactionalID == "" {
 		return nil, &APIError{StatusCode: 400, Message: "transactionalId is required"}
 	}
 	var out TransactionalResourceResponse
-	if err := c.do(ctx, http.MethodPost, "/v2/transactional/"+url.PathEscape(transactionalID)+"/publish", nil, &out, nil); err != nil {
+	if err := c.do(ctx, http.MethodPost, "/v1/transactional-emails/"+url.PathEscape(transactionalID)+"/publish", nil, &out, nil); err != nil {
 		return nil, err
 	}
 	return &out, nil
