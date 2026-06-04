@@ -2,6 +2,10 @@
 
 Thanks for your interest in contributing. This is a community-maintained SDK for the [Loops API](https://loops.so/docs/api).
 
+> [!IMPORTANT]
+> This repository is being archived because Loops now maintains an official Go SDK: https://github.com/loops-so/loops-go
+> Please open issues/PRs against the official SDK for active development.
+
 ## How to contribute
 
 - **Bug reports and feature requests:** Open a [GitHub issue](https://github.com/Whats-A-MattR/loops-go-sdk/issues).
